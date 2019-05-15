@@ -1,7 +1,7 @@
 package com.decoded.zool;
 
 /**
- * A simple example program to use ZookeeperDataSinkBridge to start and stop executables based on a znode. The program dataSinkBridgeMap
+ * A simple example program to use ZoolDataBridgeImpl to start and stop executables based on a znode. The program dataSinkBridgeMap
  * the specified znode and saves the data that corresponds to the znode in the filesystem. It also starts the specified
  * program with the specified arguments when the znode onZNodeData and kills the program if the znode goes away.
  */
@@ -9,24 +9,22 @@ package com.decoded.zool;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import play.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.logging.Logger;
 
 
 /**
- * This object handles Data from Zookeeper
+ * The {@link ZoolDataFlow} accepts Zookeeper data, and directs it to each DataSink listening for data via node name.
  */
-public class ZookeeperDataFlow implements Watcher,
-    Runnable,
-    ZookeeperEventListener {
-  private Logger LOG = Logger.getLogger(ZookeeperDataFlow.class.getName());
+public class ZoolDataFlowImpl implements
+    ZoolDataFlow {
+  private Logger LOG = LoggerFactory.getLogger(ZoolDataFlowImpl.class);
 
   private ZooKeeper zk;
   private Thread dataFlowThread;
@@ -34,34 +32,48 @@ public class ZookeeperDataFlow implements Watcher,
   private int port = 2181;
   private int timeout = Integer.MAX_VALUE;
 
-  private Map<String, ZookeeperDataSinkBridge> dataSinkBridgeMap = new HashMap<>();
-  private Map<String, List<ZookeeperDataSink>> dataSinkMap = new HashMap<>();
+  private Map<String, ZoolDataBridge> dataSinkBridgeMap = new HashMap<>();
+  private Map<String, List<ZoolDataSink>> dataSinkMap = new HashMap<>();
   private ExecutorService executorService;
 
+  // This handles data from all nodes.
+  private String zNode = "/";
+  private String name = ZoolDataFlow.class.getName();
 
   @Inject
-  public ZookeeperDataFlow(ExecutorService executorService) {
+  public ZoolDataFlowImpl(ExecutorService executorService) {
     this.executorService = executorService;
   }
 
-  public ZookeeperDataFlow setHost(String host) {
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public String getZNode() {
+    return zNode;
+  }
+
+  @Override
+  public ZoolDataFlowImpl setHost(String host) {
     this.host = host;
     return this;
   }
 
-  public ZookeeperDataFlow setPort(int port) {
+  @Override
+  public ZoolDataFlowImpl setPort(int port) {
     this.port = port;
     return this;
   }
 
-  public ZookeeperDataFlow setTimeout(int timeout) {
+  @Override
+  public ZoolDataFlowImpl setTimeout(int timeout) {
     this.timeout = timeout;
     return this;
   }
 
-  /**
-   * Connects the data flow.
-   */
+  @Override
   public void connect() {
     executorService.submit(this);
   }
@@ -70,6 +82,7 @@ public class ZookeeperDataFlow implements Watcher,
    * Add a watch on a specific node.
    *
    * @param zNode the path to watch
+   * @return true if watching started.
    */
   @VisibleForTesting
   boolean watch(String zNode) {
@@ -78,7 +91,7 @@ public class ZookeeperDataFlow implements Watcher,
     }
 
     if (zk != null) {
-      dataSinkBridgeMap.computeIfAbsent(zNode, this::createZookeeperMonitor);
+      dataSinkBridgeMap.computeIfAbsent(zNode, this::createDataBridge);
       return true;
     }
 
@@ -86,6 +99,12 @@ public class ZookeeperDataFlow implements Watcher,
     return false;
   }
 
+  /**
+   * Stop watching the node.
+   *
+   * @param zNode the node path
+   * @return true if watching stopped
+   */
   @VisibleForTesting
   boolean unwatch(String zNode) {
     try {
@@ -110,41 +129,44 @@ public class ZookeeperDataFlow implements Watcher,
   }
 
   @VisibleForTesting
-  ZookeeperDataSinkBridge createZookeeperMonitor(String zNode) {
-    return new ZookeeperDataSinkBridge(zk, zNode, this);
+  ZoolDataBridge createDataBridge(String zNode) {
+    return new ZoolDataBridgeImpl(zk, zNode, this);
   }
 
-  public void drain(ZookeeperDataSink dataSink) {
-    LOG.info("drain: " + dataSink.getPath() + ", handler: " + dataSink);
-
-    dataSinkMap.computeIfAbsent(dataSink.getPath(), p -> new ArrayList<>()).add(dataSink);
+  @Override
+  public void drain(ZoolDataSink dataSink) {
+    dataSinkMap.computeIfAbsent(dataSink.getZNode(), p -> new ArrayList<>()).add(dataSink);
     // add a watch if not added
-    watch(dataSink.getPath());
-  }
-
-  public void drainStop(ZookeeperDataSink dataSink) {
-    LOG.info("drainStop: " + dataSink.getPath());
-
-    List<ZookeeperDataSink> handlersAtPath = dataSinkMap.computeIfAbsent(dataSink.getPath(), p -> new ArrayList<>());
-
-    handlersAtPath.remove(dataSink);
-    if (handlersAtPath.isEmpty()) {
-      unwatch(dataSink.getPath());
+    if (!watch(dataSink.getZNode())) {
+      LOG.error("Could not accept data from sink: " + dataSink.getName());
     }
   }
 
+  @Override
+  public void drainStop(ZoolDataSink dataSink) {
+    List<ZoolDataSink> handlersAtPath = dataSinkMap.computeIfAbsent(dataSink.getZNode(), p -> new ArrayList<>());
+
+    handlersAtPath.remove(dataSink);
+    if (handlersAtPath.isEmpty()) {
+      if (!
+          unwatch(dataSink.getZNode())) {
+        LOG.error("Could not accept data form sink: " + dataSink.getName());
+      }
+    }
+  }
+
+  @Override
   public ZooKeeper getZk() {
     return zk;
   }
 
   @Override
   public void process(WatchedEvent event) {
-    LOG.info("process event: " + event.getPath());
     dataSinkBridgeMap.values().iterator().forEachRemaining(watch -> watch.process(event));
   }
 
   private boolean allDead() {
-    Iterator<ZookeeperDataSinkBridge> it = dataSinkBridgeMap.values().iterator();
+    Iterator<ZoolDataBridge> it = dataSinkBridgeMap.values().iterator();
     boolean allDead = true;
     while (it.hasNext()) {
       if (!it.next().isDead()) {
@@ -167,43 +189,41 @@ public class ZookeeperDataFlow implements Watcher,
         dataFlowThread = null;
       }
     } catch (InterruptedException e) {
-      LOG.warn("Shutting Down");
+      LOG.warn("ZoolDataFlow is Shutting Down");
     }
   }
 
+  @Override
   public void terminate() {
     if (dataFlowThread != null) {
       dataFlowThread.interrupt();
     }
   }
 
-  public void onZookeeperSessionInvalid(KeeperException.Code rc, String nodePath) {
+  @Override
+  public void onZoolSessionInvalid(KeeperException.Code rc, String nodePath) {
     synchronized (this) {
-      LOG.warn("onZookeeperSessionInvalid: " + nodePath);
+      LOG.warn("onZoolSessionInvalid: " + nodePath);
       notifyAll();
     }
   }
 
   @Override
-  public void onZNodeDataNotExists(String nodePath) {
-    LOG.info("onZNodeDataNotExists: " + nodePath);
-    Optional.ofNullable(dataSinkMap.get(nodePath)).ifPresent(handlers -> handlers.forEach(handler -> handler.onDataNotExists(nodePath)));
+  public void onDataNotExists(String zNode) {
+    Optional.ofNullable(dataSinkMap.get(zNode)).ifPresent(handlers -> handlers.forEach(handler -> handler.onDataNotExists(zNode)));
   }
 
   @Override
-  public void onZNodeData(byte[] data, String nodePath) {
-    LOG.info("onZNodeData: " + data.length + ", " + nodePath);
+  public void onData(String zNode, byte[] data) {
+    Optional<List<ZoolDataSink>> maybeHandlers = Optional.ofNullable(dataSinkMap.get(zNode));
 
-    Optional<List<ZookeeperDataSink>> maybeHandlers = Optional.ofNullable(dataSinkMap.get(nodePath));
-
-    maybeHandlers.ifPresent(handlers -> {
-      handlers.forEach(handler -> {
-        if (data.length == 0) {
-          handler.onDataNotExists(nodePath);
-        } else {
-          handler.onData(nodePath, data);
-        }
-      });
-    });
+    maybeHandlers.ifPresent(handlers ->
+        handlers.forEach(handler -> {
+          if (data.length == 0) {
+            handler.onDataNotExists(zNode);
+          } else {
+            handler.onData(zNode, data);
+          }
+        }));
   }
 }

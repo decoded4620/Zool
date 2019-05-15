@@ -4,7 +4,8 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
-import play.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,10 +16,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * A Zookeeper Client interface
  */
-public abstract class Zool {
-  private static final Logger.ALogger LOG = Logger.of(Zool.class);
+public class Zool {
+  private static final Logger LOG = LoggerFactory.getLogger(Zool.class);
 
-  private final ZookeeperDataFlow zookeeperDataFlow;
+  private final ZoolDataFlow zoolDataFlow;
 
   // thread safety
   private AtomicBoolean connected = new AtomicBoolean(false);
@@ -29,26 +30,41 @@ public abstract class Zool {
   private String serviceMapNode;
   private String gatewayMapNode;
 
-  public Zool(ZookeeperDataFlow zookeeperDataFlow) {
-    this.zookeeperDataFlow = zookeeperDataFlow;
-  }
-
-  public void setGatewayMapNode(String gatewayMapNode) {
-    this.gatewayMapNode = gatewayMapNode;
+  public Zool(ZoolDataFlow zoolDataFlow) {
+    this.zoolDataFlow = zoolDataFlow;
   }
 
   public String getGatewayMapNode() {
     return gatewayMapNode;
   }
 
+  /**
+   * Set the name of the node pertaining to the gateway map.
+   *
+   * @param gatewayMapNode the name of a gateway map node.
+   */
+  public void setGatewayMapNode(String gatewayMapNode) {
+    this.gatewayMapNode = gatewayMapNode;
+  }
+
   public String getServiceMapNode() {
     return serviceMapNode;
   }
 
+  /**
+   * Set the name of the node pertaining to the service map
+   *
+   * @param serviceMapNode the name of the node
+   */
   public void setServiceMapNode(String serviceMapNode) {
     this.serviceMapNode = serviceMapNode;
   }
 
+  /**
+   * The zookeeper host url
+   *
+   * @return the url.
+   */
   public String getHost() {
     return host;
   }
@@ -61,6 +77,11 @@ public abstract class Zool {
     return port;
   }
 
+  /**
+   * Zookeeper host port
+   *
+   * @param port the port.
+   */
   public void setPort(int port) {
     this.port = port;
   }
@@ -69,6 +90,11 @@ public abstract class Zool {
     return timeout;
   }
 
+  /**
+   * Timeout for zk calls.
+   *
+   * @param timeout the timeout.
+   */
   public void setTimeout(int timeout) {
     this.timeout = timeout;
   }
@@ -81,7 +107,7 @@ public abstract class Zool {
    */
   public List<String> getChildren(String path) {
     try {
-      return zookeeperDataFlow.getZk().getChildren(path, false);
+      return zoolDataFlow.getZk().getChildren(path, false);
     } catch (InterruptedException ex) {
       LOG.error("Interrupted", ex);
     } catch (KeeperException ex) {
@@ -92,7 +118,7 @@ public abstract class Zool {
 
   @Deprecated
   public ZooKeeper getZookeeper() {
-    return zookeeperDataFlow.getZk();
+    return zoolDataFlow.getZk();
   }
 
 
@@ -102,11 +128,11 @@ public abstract class Zool {
   public synchronized void connect() {
     if (!connected.get()) {
       connected.set(true);
-      this.zookeeperDataFlow.setHost(host)
+      this.zoolDataFlow.setHost(host)
           .setPort(port)
           .setTimeout(timeout);
-      // run the zookeeperDataFlow in its own thread.
-      zookeeperDataFlow.connect();
+      // run the zoolDataFlow in its own thread.
+      zoolDataFlow.connect();
     }
   }
 
@@ -116,12 +142,18 @@ public abstract class Zool {
   public synchronized void disconnect() {
     if (connected.get()) {
       connected.set(false);
-      zookeeperDataFlow.terminate();
+      zoolDataFlow.terminate();
     }
   }
 
-  public AtomicBoolean isConnected() {
-    return connected;
+
+  /**
+   * Returns the connection status.
+   *
+   * @return a boolean.
+   */
+  public boolean isConnected() {
+    return connected.get();
   }
 
   /**
@@ -134,7 +166,7 @@ public abstract class Zool {
     LOG.warn("removeNode: " + path);
 
     try {
-      zookeeperDataFlow.getZk().delete(path, 1);
+      zoolDataFlow.getZk().delete(path, 1);
       return true;
     } catch (KeeperException ex) {
       if (ex.code() == KeeperException.Code.NONODE) {
@@ -160,7 +192,7 @@ public abstract class Zool {
   public boolean createNode(String path, byte[] data, ArrayList<ACL> acls, CreateMode mode) {
     try {
       LOG.info("createNode: " + path + " with data: " + new String(data));
-      zookeeperDataFlow.getZk().create(path, data, acls, mode);
+      zoolDataFlow.getZk().create(path, data, acls, mode);
       LOG.info("Created " + mode.name() + " node: " + path);
       return true;
     } catch (KeeperException ex) {
@@ -178,8 +210,8 @@ public abstract class Zool {
    *
    * @param dataSink the data sink to plug
    */
-  public void drainStop(ZookeeperDataSink dataSink) {
-    zookeeperDataFlow.drainStop(dataSink);
+  public void drainStop(ZoolDataSink dataSink) {
+    zoolDataFlow.drainStop(dataSink);
   }
 
   /**
@@ -187,8 +219,8 @@ public abstract class Zool {
    *
    * @param dataSink the data sink to plug
    */
-  public void drain(ZookeeperDataSink dataSink) {
-    zookeeperDataFlow.drain(dataSink);
+  public void drain(ZoolDataSink dataSink) {
+    zoolDataFlow.drain(dataSink);
   }
 
 }
