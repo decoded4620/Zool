@@ -69,3 +69,32 @@ private void onZoolServicesData(String path, byte[] data) {
 private void onZoolServicesNoData(String path) {
 }
 ```
+
+
+### Creating your service and gateway nodes
+This assumes you have Zookeeper installed on your Linux, Mac, or Windows system.
+1. Run your Zookeeper Server (e.g. localhost:2181)
+2. Open zkCli.sh (or zkCli.bat for windows)
+Once you see
+
+```[zk: localhost:2181(CONNECTED) 0]```
+
+You can create your `services` and `gateway` nodes.
+
+```
+[zk: localhost:2181(CONNECTED) 0] create /gateway {}
+Created /gateway
+[zk: localhost:2181(CONNECTED) 1]
+
+[zk: localhost:2181(CONNECTED) 0] create /services {}
+Created /services
+[zk: localhost:2181(CONNECTED) 1]
+```
+
+Then check the directory of the zookeeper root
+```
+[zk: localhost:2181(CONNECTED) 2] ls /
+[services, zookeeper, gateway]
+[zk: localhost:2181(CONNECTED) 3]
+```
+
