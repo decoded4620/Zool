@@ -1,9 +1,5 @@
 package com.decoded.zool;
 
-/**
- * A simple class that monitors the data and existence of a ZooKeeper node. It uses asynchronous ZooKeeper APIs.
- */
-
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.WatchedEvent;
@@ -46,7 +42,6 @@ public class ZoolDataBridgeImpl implements
   @Override
   public void process(WatchedEvent event) {
     final String path = event.getPath();
-    LOG.info("process watched at path: " + path + ", type: " + event.getType() + ", state: " + event.getState());
     if (event.getType() == Event.EventType.None) {
       if (event.getState().equals(Event.KeeperState.Expired)) {
         die(Code.SESSIONEXPIRED);
@@ -63,10 +58,6 @@ public class ZoolDataBridgeImpl implements
   @Override
   public void processResult(int rc, String path, Object ctx, Stat stat) {
     final Code code = Code.get(rc);
-
-    LOG.info("---------------------------------------------------------");
-    LOG.warn("Process result: " + code.name() + ", " + path);
-    LOG.info("---------------------------------------------------------");
     switch (code) {
       case OK:
       case NONODE:
@@ -92,12 +83,10 @@ public class ZoolDataBridgeImpl implements
   }
 
   private void status(Code statusCode) {
-    LOG.info("Status: " + zkNodePath + ", code: " + statusCode.name());
     byte[] b = null;
     if (statusCode == Code.OK) {
       try {
         b = zk.getData(zkNodePath, false, null);
-        LOG.info("Got new data at: " + zkNodePath);
       } catch (KeeperException e) {
         // We don't need to worry about recovering now. The signal
         // callbacks will kick off any exception handling
@@ -108,7 +97,6 @@ public class ZoolDataBridgeImpl implements
       }
 
       if ((b == null && b != prevData) || (b != null && !Arrays.equals(prevData, b))) {
-        LOG.info("New data is ready..." + this.zkNodePath + ", size: " + b.length);
         if (zoolWatcher != null) {
           zoolWatcher.onData(this.zkNodePath, b);
         }
@@ -118,10 +106,12 @@ public class ZoolDataBridgeImpl implements
       if (zoolWatcher != null) {
         zoolWatcher.onDataNotExists(zkNodePath);
       }
+    } else {
+      LOG.warn("Unhandled status code: " + statusCode.name());
     }
   }
 
-  void die(Code code) {
+  private void die(Code code) {
     LOG.warn("Shutting down ZK Monitor: " + zkNodePath);
     dead = true;
     if (zoolWatcher != null) {

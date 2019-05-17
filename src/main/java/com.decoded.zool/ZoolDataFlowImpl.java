@@ -216,10 +216,11 @@ public class ZoolDataFlowImpl implements
   @Override
   public void onData(String zNode, byte[] data) {
     Optional<List<ZoolDataSink>> maybeHandlers = Optional.ofNullable(dataSinkMap.get(zNode));
-
+    
+    final boolean empty = data.length == 0;
     maybeHandlers.ifPresent(handlers ->
         handlers.forEach(handler -> {
-          if (data.length == 0) {
+          if (empty) {
             handler.onDataNotExists(zNode);
           } else {
             handler.onData(zNode, data);

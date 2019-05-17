@@ -118,22 +118,20 @@ public class ZoolTest {
       zooKeeper = mock(ZooKeeper.class);
 
       dataBridge = spy(new ZoolDataBridgeImpl(zooKeeper,
-          data.zNode, this.watcher));
+          data.zNode, watcher));
 
       executorService = mock(ExecutorService.class);
       dataFlow = spy(new ZoolDataFlowImpl(executorService));
-      zool = spy(new TestZookeeperClient(dataFlow));
+      zool = spy(new TestZoolClient(dataFlow));
     }
   }
 
 
-  public static class TestZookeeperClient extends Zool {
-
-
+  public static class TestZoolClient extends Zool {
     private final Cfg cfg;
 
     @Inject
-    public TestZookeeperClient(ZoolDataFlow zoolDataFlow) {
+    public TestZoolClient(ZoolDataFlow zoolDataFlow) {
       super(zoolDataFlow);
       cfg = new Cfg();
 
