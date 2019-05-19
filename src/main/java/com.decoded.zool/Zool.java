@@ -121,16 +121,17 @@ public class Zool {
     return zoolDataFlow.getZk();
   }
 
-
   /**
    * Connect to zookeeper.
    */
   public synchronized void connect() {
     if (!connected.get()) {
       connected.set(true);
+
       this.zoolDataFlow.setHost(host)
           .setPort(port)
           .setTimeout(timeout);
+
       // run the zoolDataFlow in its own thread.
       zoolDataFlow.connect();
     }
@@ -163,8 +164,6 @@ public class Zool {
    * @return a boolean, true if the path was either removed, or didn't exist to begin with.
    */
   public boolean removeNode(String path) {
-    LOG.warn("removeNode: " + path);
-
     try {
       zoolDataFlow.getZk().delete(path, 1);
       return true;
@@ -191,12 +190,10 @@ public class Zool {
    */
   public boolean createNode(String path, byte[] data, ArrayList<ACL> acls, CreateMode mode) {
     try {
-      LOG.info("createNode: " + path + " with data: " + new String(data));
       zoolDataFlow.getZk().create(path, data, acls, mode);
-      LOG.info("Created " + mode.name() + " node: " + path);
       return true;
     } catch (KeeperException ex) {
-      LOG.warn("Keeper exception creating node: ", ex.getMessage());
+      LOG.error("Keeper exception creating node: ", ex);
       // if can't create, try to remove our node.
     } catch (InterruptedException ex) {
       LOG.error("Interrupted exception", ex);

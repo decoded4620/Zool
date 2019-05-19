@@ -1,11 +1,5 @@
 package com.decoded.zool;
 
-/**
- * A simple example program to use ZoolDataBridgeImpl to start and stop executables based on a znode. The program dataSinkBridgeMap
- * the specified znode and saves the data that corresponds to the znode in the filesystem. It also starts the specified
- * program with the specified arguments when the znode onZNodeData and kills the program if the znode goes away.
- */
-
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -22,8 +16,7 @@ import java.util.concurrent.ExecutorService;
 /**
  * The {@link ZoolDataFlow} accepts Zookeeper data, and directs it to each DataSink listening for data via node name.
  */
-public class ZoolDataFlowImpl implements
-    ZoolDataFlow {
+public class ZoolDataFlowImpl implements ZoolDataFlow {
   private Logger LOG = LoggerFactory.getLogger(ZoolDataFlowImpl.class);
 
   private ZooKeeper zk;
@@ -95,7 +88,7 @@ public class ZoolDataFlowImpl implements
       return true;
     }
 
-    LOG.error("cannot watch " + zNode + " on host: " + host + ':' + port);
+    LOG.error("Cannot watch " + zNode + " on host: " + host + ':' + port);
     return false;
   }
 
@@ -113,7 +106,7 @@ public class ZoolDataFlowImpl implements
     } catch (InterruptedException ex) {
       LOG.error("Interrupted while removing dataSinkBridgeMap at path: " + zNode);
     } catch (KeeperException ex) {
-      LOG.warn("Zookeeper could not remove watch " + zNode, ex);
+      LOG.error("Zookeeper could not remove watch " + zNode, ex);
     }
     return false;
   }
@@ -148,8 +141,7 @@ public class ZoolDataFlowImpl implements
 
     handlersAtPath.remove(dataSink);
     if (handlersAtPath.isEmpty()) {
-      if (!
-          unwatch(dataSink.getZNode())) {
+      if (!unwatch(dataSink.getZNode())) {
         LOG.error("Could not accept data form sink: " + dataSink.getName());
       }
     }
@@ -210,21 +202,13 @@ public class ZoolDataFlowImpl implements
 
   @Override
   public void onDataNotExists(String zNode) {
-    Optional.ofNullable(dataSinkMap.get(zNode)).ifPresent(handlers -> handlers.forEach(handler -> handler.onDataNotExists(zNode)));
+    Optional.ofNullable(dataSinkMap.get(zNode))
+        .ifPresent(handlers -> handlers.forEach(handler -> handler.onDataNotExists(zNode)));
   }
 
   @Override
   public void onData(String zNode, byte[] data) {
-    Optional<List<ZoolDataSink>> maybeHandlers = Optional.ofNullable(dataSinkMap.get(zNode));
-    
-    final boolean empty = data.length == 0;
-    maybeHandlers.ifPresent(handlers ->
-        handlers.forEach(handler -> {
-          if (empty) {
-            handler.onDataNotExists(zNode);
-          } else {
-            handler.onData(zNode, data);
-          }
-        }));
+    Optional.ofNullable(dataSinkMap.get(zNode))
+        .ifPresent(handlers -> handlers.forEach(handler -> handler.onData(zNode, data)));
   }
 }

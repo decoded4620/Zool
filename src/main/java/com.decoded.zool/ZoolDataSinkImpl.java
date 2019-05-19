@@ -71,7 +71,6 @@ public class ZoolDataSinkImpl implements ZoolDataSink {
 
   @Override
   public void onDataNotExists(String zNode) {
-    LOG.warn("onDataNotExists() -> " + zNode);
     Optional.ofNullable(noDataHandler)
         .ifPresent(ndh -> ndh.accept(zNode));
   }

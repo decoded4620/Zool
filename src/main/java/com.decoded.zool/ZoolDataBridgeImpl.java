@@ -83,10 +83,10 @@ public class ZoolDataBridgeImpl implements
   }
 
   private void status(Code statusCode) {
-    byte[] b = null;
+    byte[] newData = null;
     if (statusCode == Code.OK) {
       try {
-        b = zk.getData(zkNodePath, false, null);
+        newData = zk.getData(zkNodePath, false, null);
       } catch (KeeperException e) {
         // We don't need to worry about recovering now. The signal
         // callbacks will kick off any exception handling
@@ -96,11 +96,11 @@ public class ZoolDataBridgeImpl implements
         return;
       }
 
-      if ((b == null && b != prevData) || (b != null && !Arrays.equals(prevData, b))) {
+      if ((newData == null && newData != prevData) || (newData != null && !Arrays.equals(prevData, newData))) {
         if (zoolWatcher != null) {
-          zoolWatcher.onData(this.zkNodePath, b);
+          zoolWatcher.onData(this.zkNodePath, newData);
         }
-        prevData = b;
+        prevData = newData;
       }
     } else if (statusCode == Code.NONODE) {
       if (zoolWatcher != null) {
