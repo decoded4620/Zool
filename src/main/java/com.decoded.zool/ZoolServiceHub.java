@@ -12,6 +12,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
+/**
+ * This class wraps Zool and interacts with it as a Service announcement portal.
+ * Each Application Container that uses a ZoolServiceHub can define a service key
+ * for every container with the same service key, each container will be grouped into a list
+ * of hosts for that service key. Each host on the Zool Cluster will get a copy of the entire
+ * services map. Which is how each host knows about all other services, and their locations inherently.
+ */
 public class ZoolServiceHub {
   private static final String HTTP_PORT_PROP = "http.port";
 
