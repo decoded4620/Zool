@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -31,10 +32,35 @@ public class ZoolServiceHub {
   private Map<String, Set<String>> millServiceMap = new ConcurrentHashMap<>();
   private int port = -1;
 
+  private Runnable gatewayCallback;
+  private Runnable serviceNodeCallback;
+  private Runnable serviceMapCallback;
+  private Runnable hostsLoadedCallback;
+
   @Inject
   public ZoolServiceHub(Zool zool, ExecutorService executorService) {
     this.zoolClient = zool;
     this.executorService = executorService;
+  }
+
+  public ZoolServiceHub setServiceMapCallback(Runnable serviceMapCallback) {
+    this.serviceMapCallback = serviceMapCallback;
+    return this;
+  }
+
+  public ZoolServiceHub setServiceNodeCallback(Runnable serviceNodeCallback) {
+    this.serviceNodeCallback = serviceNodeCallback;
+    return this;
+  }
+
+  public ZoolServiceHub setGatewayCallback(Runnable gatewayCallback) {
+    this.gatewayCallback = gatewayCallback;
+    return this;
+  }
+
+  public ZoolServiceHub setHostsLoadedCallback(Runnable hostsLoadedCallback) {
+    this.hostsLoadedCallback = hostsLoadedCallback;
+    return this;
   }
 
   /**
@@ -77,6 +103,9 @@ public class ZoolServiceHub {
     return new ArrayList<>(millServiceMap.computeIfAbsent(serviceKey, sk -> new HashSet<>()));
   }
 
+  /**
+   * Start It
+   */
   public void start() {
     final String serviceMap = this.zoolClient.getServiceMapNode();
     final String gateway = this.zoolClient.getGatewayMapNode();
@@ -90,29 +119,33 @@ public class ZoolServiceHub {
     this.zoolClient.connect();
   }
 
+  /**
+   * Stop it
+   */
   public void stop() {
     this.zoolClient.disconnect();
   }
 
 
   private void onGatewayData(String path, byte[] data) {
-    LOG.debug("onGatewayData: " + path + ", " + data.length + " bytes, value: \n" + new String(data));
+    ZoolUtil.debugIf(() -> "onGatewayData: " + path + ", " + data.length + " bytes, value: \n" + new String(data));
+    Optional.ofNullable(this.gatewayCallback).ifPresent(Runnable::run);
   }
 
   private void onGatewayNoData(String path) {
-    LOG.error("onGatewayNoData: " + path);
+    LOG.info("onGatewayNoData: " + path);
     ZoolUtil.createEmptyPersistentNode(zoolClient, path);
   }
 
   private void onZoolServiceMapData(String path, byte[] data) {
-    LOG.debug("onZookeeperServiceMapData: " + path + ", " + data.length + " bytes, value: \n" + new String(data));
+    ZoolUtil.debugIf(() -> "onZookeeperServiceMapData: " + path + ", " + data.length + " bytes, value: \n" + new String(data));
 
     List<String> children = zoolClient.getChildren(path);
 
-    LOG.debug("Total Known Services: " + children.size());
+    ZoolUtil.debugIf(() -> "Total Known Services: " + children.size());
     children.forEach(childName -> {
       final String servicesNodeName = path + '/' + childName;
-      LOG.debug("Storing service host list for: " + childName);
+      ZoolUtil.debugIf(() -> "Storing service host list for: " + childName);
       millServiceMap.computeIfAbsent(servicesNodeName, p -> new HashSet<>());
       collectNodeChildren(getPubDns(), servicesNodeName);
     });
@@ -121,10 +154,11 @@ public class ZoolServiceHub {
     this.zoolClient.drain(
         new ZoolDataSinkImpl(this.zoolClient.getServiceMapNode() + '/' + serviceKey, this::onServiceNodeData,
                              this::onServiceNodeNoData));
+    Optional.ofNullable(this.serviceMapCallback).ifPresent(Runnable::run);
   }
 
   private void onZoolServiceMapNoData(String path) {
-    LOG.error("onZoolServiceMapNoData: " + path);
+    LOG.info("onZoolServiceMapNoData: " + path);
     ZoolUtil.createEmptyPersistentNode(zoolClient, path);
   }
 
@@ -133,12 +167,12 @@ public class ZoolServiceHub {
   }
 
   private void onZoolHostNodeNoData(String path) {
-    LOG.warn("onZoolHostNodeNoData: " + path);
+    LOG.info("onZoolHostNodeNoData: " + path);
   }
 
   private void onServiceNodeData(String serviceNodePath, byte[] data) {
     NetworkUtil.getMaybeCanonicalLocalhostName().ifPresent(localhostUrl -> {
-      LOG.info("Booting up a " + (isProd ? "Production" : "Dev") + " host@" + localhostUrl);
+      ZoolUtil.debugIf(() -> "Booting up a " + (isProd ? "Production" : "Dev") + " host@" + localhostUrl);
       this.bootServicesHub(serviceNodePath, localhostUrl);
     });
   }
@@ -150,6 +184,7 @@ public class ZoolServiceHub {
    * @param serviceNodePath the service node path
    */
   private void collectNodeChildren(String pubDns, String serviceNodePath) {
+    ZoolUtil.debugIf(() -> "Collect Node Children " + pubDns + " -> " + serviceNodePath);
     List<String> children = zoolClient.getChildren(serviceNodePath);
 
     // clear the service map
@@ -159,6 +194,7 @@ public class ZoolServiceHub {
     final CountDownLatch latch = new CountDownLatch(children.size());
     children.forEach(childName -> {
       zoolClient.getZookeeper().getData(serviceNodePath + '/' + childName, false, (rc, p, ctx, d, s) -> {
+        ZoolUtil.debugIf(() -> "Service Node: " + new String(d));
         millServiceMap.get(serviceNodePath).add(new String(d));
         latch.countDown();
       }, null);
@@ -173,20 +209,35 @@ public class ZoolServiceHub {
     if (serviceNodePath.endsWith(serviceKey)) {
       List<String> myHosts = new ArrayList<>(millServiceMap.computeIfAbsent(serviceNodePath, p -> new HashSet<>()));
       if (!myHosts.contains(pubDns)) {
+        ZoolUtil.debugIf(() -> "Self Announcing on Node: " + pubDns);
         myHosts.add(pubDns);
       }
     }
 
+    AtomicInteger hostCount = new AtomicInteger(0);
+    millServiceMap.forEach((k, v) -> v.forEach(service -> hostCount.incrementAndGet()));
+
+    ZoolUtil.debugIf(() -> "Total External Hosts Known: " + (hostCount.get() - 1));
+    // wait for more than just OUR host to be online.
+    if(hostCount.get() > 0) {
+      Optional.ofNullable(hostsLoadedCallback).ifPresent(Runnable::run);
+    } else {
+      ZoolUtil.debugIf(() -> "Polling for hosts, not yet loaded...");
+    }
+
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Milli Service Nodes are Loaded: " + millServiceMap.size() + " services");
+      ZoolUtil.debugIf(() -> "Milli Service Nodes are Loaded: " + millServiceMap.size() + " services");
       millServiceMap.forEach((serviceName, hosts) -> {
-        LOG.debug("Service: " + serviceName + ", hosts: ");
-        hosts.forEach(hostName -> LOG.debug("\t - " + hostName));
+        ZoolUtil.debugIf(() -> "Service: " + serviceName + ", hosts: ");
+        hosts.forEach(hostName -> ZoolUtil.debugIf(() -> "\t - " + hostName));
       });
     }
 
     // keep polling
-    executorService.submit(() -> this.poll(pubDns, serviceNodePath));
+    if(millServiceMap.isEmpty() || hostCount.get() <= 1) {
+      LOG.info("Polling again since host count only include ourselves");
+      executorService.submit(() -> this.poll(pubDns, serviceNodePath));
+    }
   }
 
   /**
@@ -196,6 +247,7 @@ public class ZoolServiceHub {
    * @param serviceNodePath the service instance path
    */
   private void poll(String pubDns, String serviceNodePath) {
+    ZoolUtil.debugIf(() -> "Poll: " + pubDns + " -> " + serviceNodePath);
     if (zoolClient.isConnected()) {
       try {
         Thread.sleep(pollingInterval);
@@ -205,6 +257,8 @@ public class ZoolServiceHub {
         LOG.error("Disconnected from Zookeeper", ex);
         throw new RuntimeException("Disconnected", ex);
       }
+    } else {
+      LOG.warn("Zool is not connected!");
     }
   }
 
@@ -235,6 +289,7 @@ public class ZoolServiceHub {
    * @param localhostUrl    the localhost url.
    */
   private void bootServicesHub(final String serviceNodePath, final String localhostUrl) {
+    ZoolUtil.debugIf(() ->"bootServicesHub -> " + serviceNodePath + " on " + localhostUrl);
     String pubDns = getPubDns();
 
     collectNodeChildren(pubDns, serviceNodePath);
@@ -244,6 +299,8 @@ public class ZoolServiceHub {
     // when new services come online, or die
     this.zoolClient.drain(new ZoolDataSinkImpl(instancePath, this::onZoolHostNodeData, this::onZoolHostNodeNoData));
     ZoolUtil.createEphemeralNode(zoolClient, instancePath, pubDns.getBytes());
+
+    Optional.ofNullable(this.serviceNodeCallback).ifPresent(Runnable::run);
   }
 
   /**
