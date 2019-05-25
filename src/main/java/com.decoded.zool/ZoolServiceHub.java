@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -12,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.decoded.zool.ZoolUtil.debugIf;
 
 /**
  * This class wraps Zool and interacts with it as a Service announcement portal.
@@ -103,10 +105,52 @@ public class ZoolServiceHub {
     return new ArrayList<>(millServiceMap.computeIfAbsent(serviceKey, sk -> new HashSet<>()));
   }
 
+  // TODO
+  public String getGatewayHost(String serviceKey) {
+    // returns the gateway representation of the service key.
+    final String gatwayMapNode = this.zoolClient.getGatewayMapNode();
+    debugIf(() -> "getNextHost[" + serviceKey + "]");
+    List<String> hosts = getHostsForService(gatwayMapNode + '/' + serviceKey);
+    if(hosts.isEmpty()) {
+      LOG.error("Service key " + serviceKey + " was invalid. Valid service keys: ");
+      getKnownServices().forEach(knownService -> {
+        LOG.warn(knownService);
+        getHostsForService(knownService).forEach(host -> LOG.warn("\t" + host));
+      });
+
+      return "";
+    }
+    final int idx = Math.max(0, new Random().nextInt()) % hosts.size();
+    return hosts.get(idx);
+
+  }
+  /**
+   * Returns the next "best" host to use for a service key.
+   * @param serviceKey the service key.
+   * @return String the next host.
+   */
+  public String getNextHost(String serviceKey) {
+    // clients should not have to supply the service map node
+    final String serviceMap = this.zoolClient.getServiceMapNode();
+    final String path = serviceMap + '/' + serviceKey;
+    debugIf(() -> "getNextHost[" + path + "]");
+    List<String> hosts = getHostsForService(path);
+    if(hosts.isEmpty()) {
+      LOG.error("Service path " + path + " was invalid. Valid service keys: ");
+      getKnownServices().forEach(knownService -> getHostsForService(knownService).forEach(
+          host -> LOG.warn("\t" + serviceMap + '/' + knownService + "::" + host)));
+      throw new RuntimeException(new NoRouteToHostException("Service Key " + serviceKey + " has no hosts"));
+    }
+
+    final int idx = Math.max(0, new Random().nextInt()) % hosts.size();
+    debugIf(() -> "Getting " + serviceKey + " host at " + idx);
+    return hosts.get(idx);
+  }
   /**
    * Start It
    */
   public void start() {
+    debugIf(() -> "starting up...");
     final String serviceMap = this.zoolClient.getServiceMapNode();
     final String gateway = this.zoolClient.getGatewayMapNode();
 
