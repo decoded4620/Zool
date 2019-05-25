@@ -25,6 +25,7 @@ import static com.decoded.zool.ZoolUtil.debugIf;
 public class ZoolServiceHub {
   private static final String HTTP_PORT_PROP = "http.port";
 
+  private boolean firstLoad = true;
   private static final Logger LOG = LoggerFactory.getLogger(ZoolServiceHub.class);
   private final Zool zoolClient;
   private final ExecutorService executorService;
@@ -38,6 +39,7 @@ public class ZoolServiceHub {
   private Runnable serviceNodeCallback;
   private Runnable serviceMapCallback;
   private Runnable hostsLoadedCallback;
+  private Runnable hostUpdatedCallback;
 
   @Inject
   public ZoolServiceHub(Zool zool, ExecutorService executorService) {
@@ -62,6 +64,11 @@ public class ZoolServiceHub {
 
   public ZoolServiceHub setHostsLoadedCallback(Runnable hostsLoadedCallback) {
     this.hostsLoadedCallback = hostsLoadedCallback;
+    return this;
+  }
+
+  public ZoolServiceHub setHostUpdatedCallback(Runnable hostUpdatedCallback) {
+    this.hostUpdatedCallback = hostUpdatedCallback;
     return this;
   }
 
@@ -264,7 +271,14 @@ public class ZoolServiceHub {
     ZoolUtil.debugIf(() -> "Total External Hosts Known: " + (hostCount.get() - 1));
     // wait for more than just OUR host to be online.
     if(hostCount.get() > 0) {
-      Optional.ofNullable(hostsLoadedCallback).ifPresent(Runnable::run);
+      if(firstLoad) {
+        firstLoad = false;
+        Optional.ofNullable(hostsLoadedCallback).ifPresent(Runnable::run);
+        // this one happens only once
+        hostsLoadedCallback = null;
+      } else {
+        Optional.ofNullable(hostUpdatedCallback).ifPresent(Runnable::run);
+      }
     } else {
       ZoolUtil.debugIf(() -> "Polling for hosts, not yet loaded...");
     }
