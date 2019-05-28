@@ -2,44 +2,49 @@ package com.decoded.zool;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.decoded.zool.ZoolUtil.debugIf;
 
+
 /**
- * This class wraps Zool and interacts with it as a Service announcement portal.
- * Each Application Container that uses a ZoolServiceHub can define a service key
- * for every container with the same service key, each container will be grouped into a list
- * of hosts for that service key. Each host on the Zool Cluster will get a copy of the entire
- * services map. Which is how each host knows about all other services, and their locations inherently.
+ * This class wraps Zool and interacts with it as a Service announcement portal. Each Application Container that uses a
+ * ZoolServiceHub can define a service key for every container with the same service key, each container will be grouped
+ * into a list of hosts for that service key. Each host on the Zool Cluster will get a copy of the entire services map.
+ * Which is how each host knows about all other services, and their locations inherently.
  */
 public class ZoolServiceHub {
-  private static final String HTTP_PORT_PROP = "http.port";
+  // only reset index counts every so often
 
-  private boolean firstLoad = true;
+  private static final String HTTP_PORT_PROP = "http.port";
   private static final Logger LOG = LoggerFactory.getLogger(ZoolServiceHub.class);
   private final Zool zoolClient;
   private final ExecutorService executorService;
+  private boolean firstLoad = true;
   private String serviceKey = "milliContainerService";
-  private int pollingInterval = 10000;
+  private int pollingInterval = 5000;
   private boolean isProd = false;
   private Map<String, Set<String>> millServiceMap = new ConcurrentHashMap<>();
   private int port = -1;
 
   private Runnable gatewayCallback;
+  private Runnable announceCallback;
   private Runnable serviceNodeCallback;
   private Runnable serviceMapCallback;
   private Runnable hostsLoadedCallback;
   private Runnable hostUpdatedCallback;
+  private AtomicLong gatewayHostIdx = new AtomicLong(0);
+  private AtomicLong hostIdx = new AtomicLong(0);
 
   @Inject
   public ZoolServiceHub(Zool zool, ExecutorService executorService) {
@@ -69,6 +74,11 @@ public class ZoolServiceHub {
 
   public ZoolServiceHub setHostUpdatedCallback(Runnable hostUpdatedCallback) {
     this.hostUpdatedCallback = hostUpdatedCallback;
+    return this;
+  }
+
+  public ZoolServiceHub setAnnounceCallback(Runnable announceCallback) {
+    this.announceCallback = announceCallback;
     return this;
   }
 
@@ -106,34 +116,28 @@ public class ZoolServiceHub {
    * Returns the set of hosts for a service.
    *
    * @param serviceKey the zookeeper service key
+   *
    * @return A set of hosts for a specific service.
    */
   public List<String> getHostsForService(String serviceKey) {
     return new ArrayList<>(millServiceMap.computeIfAbsent(serviceKey, sk -> new HashSet<>()));
   }
 
+
   // TODO
   public String getGatewayHost(String serviceKey) {
     // returns the gateway representation of the service key.
     final String gatwayMapNode = this.zoolClient.getGatewayMapNode();
-    debugIf(() -> "getNextHost[" + serviceKey + "]");
-    List<String> hosts = getHostsForService(gatwayMapNode + '/' + serviceKey);
-    if(hosts.isEmpty()) {
-      LOG.error("Service key " + serviceKey + " was invalid. Valid service keys: ");
-      getKnownServices().forEach(knownService -> {
-        LOG.warn(knownService);
-        getHostsForService(knownService).forEach(host -> LOG.warn("\t" + host));
-      });
+    debugIf(() -> "getGatewayHost[" + serviceKey + "]");
 
-      return "";
-    }
-    final int idx = Math.max(0, new Random().nextInt()) % hosts.size();
-    return hosts.get(idx);
-
+    return getNextHostFromHostList(gatewayHostIdx, getHostsForService(gatwayMapNode + '/' + serviceKey));
   }
+
   /**
    * Returns the next "best" host to use for a service key.
+   *
    * @param serviceKey the service key.
+   *
    * @return String the next host.
    */
   public String getNextHost(String serviceKey) {
@@ -141,18 +145,10 @@ public class ZoolServiceHub {
     final String serviceMap = this.zoolClient.getServiceMapNode();
     final String path = serviceMap + '/' + serviceKey;
     debugIf(() -> "getNextHost[" + path + "]");
-    List<String> hosts = getHostsForService(path);
-    if(hosts.isEmpty()) {
-      LOG.error("Service path " + path + " was invalid. Valid service keys: ");
-      getKnownServices().forEach(knownService -> getHostsForService(knownService).forEach(
-          host -> LOG.warn("\t" + serviceMap + '/' + knownService + "::" + host)));
-      throw new RuntimeException(new NoRouteToHostException("Service Key " + serviceKey + " has no hosts"));
-    }
 
-    final int idx = Math.max(0, new Random().nextInt()) % hosts.size();
-    debugIf(() -> "Getting " + serviceKey + " host at " + idx);
-    return hosts.get(idx);
+    return getNextHostFromHostList(hostIdx, getHostsForService(path));
   }
+
   /**
    * Start It
    */
@@ -177,6 +173,25 @@ public class ZoolServiceHub {
     this.zoolClient.disconnect();
   }
 
+  private String getNextHostFromHostList(AtomicLong hostIdxHolder, List<String> hosts) {
+    if (hosts.isEmpty()) {
+      LOG.error("Service key " + serviceKey + " was invalid. Valid service keys: ");
+      getKnownServices().forEach(knownService -> {
+        LOG.warn(knownService);
+        getHostsForService(knownService).forEach(host -> LOG.warn("\t" + host));
+      });
+
+      return "";
+    }
+
+    final long idx = hostIdxHolder.getAndIncrement();
+
+    // corrected idx will always be within range
+    final int correctedIdx = (int) (idx % hosts.size());
+    debugIf(() -> "Getting " + serviceKey + " host at " + correctedIdx + " of " + hosts.size());
+
+    return hosts.get(correctedIdx);
+  }
 
   private void onGatewayData(String path, byte[] data) {
     ZoolUtil.debugIf(() -> "onGatewayData: " + path + ", " + data.length + " bytes, value: \n" + new String(data));
@@ -189,7 +204,8 @@ public class ZoolServiceHub {
   }
 
   private void onZoolServiceMapData(String path, byte[] data) {
-    ZoolUtil.debugIf(() -> "onZookeeperServiceMapData: " + path + ", " + data.length + " bytes, value: \n" + new String(data));
+    ZoolUtil.debugIf(
+        () -> "onZookeeperServiceMapData: " + path + ", " + data.length + " bytes, value: \n" + new String(data));
 
     List<String> children = zoolClient.getChildren(path);
 
@@ -198,7 +214,18 @@ public class ZoolServiceHub {
       final String servicesNodeName = path + '/' + childName;
       ZoolUtil.debugIf(() -> "Storing service host list for: " + childName);
       millServiceMap.computeIfAbsent(servicesNodeName, p -> new HashSet<>());
-      collectNodeChildren(getPubDns(), servicesNodeName);
+      final String pubDns = getPubDns();
+      int hostCount = collectServiceNodeChildren(pubDns, servicesNodeName);
+
+      // keep polling
+      if (millServiceMap.isEmpty() || hostCount <= 1) {
+        LOG.info("Polling again since host count only include ourselves");
+        executorService.submit(() -> this.poll(pubDns, servicesNodeName, 750));
+      }
+      else {
+        executorService.submit(() -> this.poll(pubDns, servicesNodeName, pollingInterval));
+      }
+
     });
 
     // watch for our service node
@@ -229,49 +256,57 @@ public class ZoolServiceHub {
   }
 
   /**
-   * Collects the children of a specific service node to store the dns.
+   * Collects the children of a specific service node to store the dns of available hosts.
    *
    * @param pubDns          the public dns of this server
    * @param serviceNodePath the service node path
    */
-  private void collectNodeChildren(String pubDns, String serviceNodePath) {
-    ZoolUtil.debugIf(() -> "Collect Node Children " + pubDns + " -> " + serviceNodePath);
+  private int collectServiceNodeChildren(String pubDns, String serviceNodePath) {
+    LOG.warn("Collect Service Node Children " + pubDns + " -> " + serviceNodePath);
     List<String> children = zoolClient.getChildren(serviceNodePath);
+    Set<String> newHosts = new HashSet<>();
 
-    // clear the service map
-    millServiceMap.computeIfAbsent(serviceNodePath, p -> new HashSet<>());
-    millServiceMap.get(serviceNodePath).clear();
-
+    // load children nodes
     final CountDownLatch latch = new CountDownLatch(children.size());
-    children.forEach(childName -> {
-      zoolClient.getZookeeper().getData(serviceNodePath + '/' + childName, false, (rc, p, ctx, d, s) -> {
-        ZoolUtil.debugIf(() -> "Service Node: " + new String(d));
-        millServiceMap.get(serviceNodePath).add(new String(d));
-        latch.countDown();
-      }, null);
-    });
+    ZooKeeper zk = zoolClient.getZookeeper();
+    children.forEach(childName -> zk.getData(serviceNodePath + '/' + childName, false, (rc, p, ctx, d, s) -> {
+      LOG.info("Received Service Node Announcement: " + new String(d));
+      newHosts.add(new String(d));
+      latch.countDown();
+    }, null));
 
     try {
       latch.await(zoolClient.getTimeout(), TimeUnit.MILLISECONDS);
+      // refresh the list with zero list downtime.
+
+      boolean didAnnounce = false;
+      if (serviceNodePath.endsWith(serviceKey)) {
+        if (!newHosts.contains(pubDns)) {
+          LOG.info("Announcing from Node: " + pubDns);
+          newHosts.add(pubDns);
+          didAnnounce = true;
+        }
+      }
+
+      millServiceMap.put(serviceNodePath, newHosts);
+
+      if (didAnnounce) {
+        Optional.ofNullable(announceCallback).ifPresent(Runnable::run);
+      }
+
     } catch (InterruptedException ex) {
       throw new RuntimeException("Timed out connecting to Zookeeper", ex);
-    }
-
-    if (serviceNodePath.endsWith(serviceKey)) {
-      List<String> myHosts = new ArrayList<>(millServiceMap.computeIfAbsent(serviceNodePath, p -> new HashSet<>()));
-      if (!myHosts.contains(pubDns)) {
-        ZoolUtil.debugIf(() -> "Self Announcing on Node: " + pubDns);
-        myHosts.add(pubDns);
-      }
     }
 
     AtomicInteger hostCount = new AtomicInteger(0);
     millServiceMap.forEach((k, v) -> v.forEach(service -> hostCount.incrementAndGet()));
 
     ZoolUtil.debugIf(() -> "Total External Hosts Known: " + (hostCount.get() - 1));
+
     // wait for more than just OUR host to be online.
-    if(hostCount.get() > 0) {
-      if(firstLoad) {
+    if (hostCount.get() > 0) {
+      LOG.info("Host count load: " + hostCount);
+      if (firstLoad) {
         firstLoad = false;
         Optional.ofNullable(hostsLoadedCallback).ifPresent(Runnable::run);
         // this one happens only once
@@ -291,11 +326,7 @@ public class ZoolServiceHub {
       });
     }
 
-    // keep polling
-    if(millServiceMap.isEmpty() || hostCount.get() <= 1) {
-      LOG.info("Polling again since host count only include ourselves");
-      executorService.submit(() -> this.poll(pubDns, serviceNodePath));
-    }
+    return hostCount.get();
   }
 
   /**
@@ -304,12 +335,13 @@ public class ZoolServiceHub {
    * @param pubDns          the public dns.
    * @param serviceNodePath the service instance path
    */
-  private void poll(String pubDns, String serviceNodePath) {
-    ZoolUtil.debugIf(() -> "Poll: " + pubDns + " -> " + serviceNodePath);
+  private void poll(String pubDns, String serviceNodePath, long restInterval) {
+    LOG.info("Poll: " + pubDns + " -> " + serviceNodePath);
     if (zoolClient.isConnected()) {
       try {
-        Thread.sleep(pollingInterval);
-        this.collectNodeChildren(pubDns, serviceNodePath);
+        this.collectServiceNodeChildren(pubDns, serviceNodePath);
+        // force a wait
+        Thread.sleep(restInterval);
       } catch (InterruptedException ex) {
         zoolClient.disconnect();
         LOG.error("Disconnected from Zookeeper", ex);
@@ -333,6 +365,11 @@ public class ZoolServiceHub {
     return currentPort;
   }
 
+  /**
+   * Returns the DNS based identifier for this machine.
+   *
+   * @return a String that uniquely identifies this host in the service key cluster on zookeeper.
+   */
   private String getPubDns() {
     // You must set the environment variable denoted in DeployConstants
     // for both dev and prod PUB DNS to run the container application.
@@ -347,10 +384,10 @@ public class ZoolServiceHub {
    * @param localhostUrl    the localhost url.
    */
   private void bootServicesHub(final String serviceNodePath, final String localhostUrl) {
-    ZoolUtil.debugIf(() ->"bootServicesHub -> " + serviceNodePath + " on " + localhostUrl);
+    ZoolUtil.debugIf(() -> "bootServicesHub -> " + serviceNodePath + " on " + localhostUrl);
     String pubDns = getPubDns();
 
-    collectNodeChildren(pubDns, serviceNodePath);
+    collectServiceNodeChildren(pubDns, serviceNodePath);
     final String instancePath = serviceNodePath + '/' + localhostUrl + ':' + getCurrentPort();
 
     // watch for service map node changes

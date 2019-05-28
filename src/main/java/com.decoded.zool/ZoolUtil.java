@@ -13,7 +13,7 @@ import static org.apache.zookeeper.ZooDefs.Ids.OPEN_ACL_UNSAFE;
 public class ZoolUtil {
   // helper for efficient debug logging
   static void debugIf(Supplier<String> message) {
-    if(LOG.isErrorEnabled()) {
+    if(LOG.isDebugEnabled()) {
       LOG.debug("{" + Thread.currentThread().getName() + "}:" + message.get());
     }
   }

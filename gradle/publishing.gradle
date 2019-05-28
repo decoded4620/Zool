@@ -34,9 +34,9 @@ publishing {
             artifact sourcesJar
             artifact javadocJar
             pom {
-                name = 'Zool Client'
-                description = 'A Zookeeper Watcher Implementation'
-                url = 'Github Baby'
+                name = 'Zool Microservice Coordinator'
+                description = 'A Zookeeper Microservice Coordinator Implementation'
+                url = 'https://github.com/decoded4620/zool/'
 
                 licenses {
                     license {
