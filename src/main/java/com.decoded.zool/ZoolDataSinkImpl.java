@@ -50,6 +50,7 @@ public class ZoolDataSinkImpl implements ZoolDataSink {
     this.name = name;
   }
 
+  @Override
   public String getName() {
     return name;
   }

@@ -8,8 +8,12 @@ import java.net.UnknownHostException;
 import java.util.Optional;
 
 
+/**
+ * Machine Networking specific utilities
+ */
 public class NetworkUtil {
   private static final Logger LOG = LoggerFactory.getLogger(NetworkUtil.class.getSimpleName());
+
   private NetworkUtil() {
   }
 

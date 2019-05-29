@@ -3,7 +3,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
 }
-
+apply from:'./gradle/javadoc.gradle'
 apply from:'./gradle/dependencies.gradle'
 apply from:'./gradle/publishing.gradle'
 

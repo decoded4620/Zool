@@ -14,8 +14,7 @@ import java.util.Arrays;
 /**
  * Watcher and Stat Callback for Zookeeper DataSink objects.
  */
-public class ZoolDataBridgeImpl implements
-    ZoolDataBridge {
+public class ZoolDataBridgeImpl implements ZoolDataBridge {
   private static final Logger LOG = LoggerFactory.getLogger(ZoolDataBridgeImpl.class);
   private ZooKeeper zk;
   private String zkNodePath;
@@ -76,12 +75,20 @@ public class ZoolDataBridgeImpl implements
     status(code);
   }
 
+  /**
+   * Singles for a zookeeper state check for our node path
+   */
   private void signal() {
     if (zk != null) {
       zk.exists(zkNodePath, true, this, null);
     }
   }
 
+  /**
+   * status of our node path / connection
+   *
+   * @param statusCode a status code.
+   */
   private void status(Code statusCode) {
     byte[] newData = null;
     if (statusCode == Code.OK) {
@@ -111,6 +118,11 @@ public class ZoolDataBridgeImpl implements
     }
   }
 
+  /**
+   * Die command.
+   *
+   * @param code the reason code.
+   */
   private void die(Code code) {
     LOG.warn("Shutting down ZK Monitor: " + zkNodePath);
     dead = true;
@@ -119,11 +131,6 @@ public class ZoolDataBridgeImpl implements
     }
   }
 
-  /**
-   * True if the monitor is dead.
-   *
-   * @return a boolean.
-   */
   @Override
   public boolean isDead() {
     return dead;

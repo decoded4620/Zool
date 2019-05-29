@@ -123,7 +123,6 @@ public class ZoolServiceHub {
     return new ArrayList<>(millServiceMap.computeIfAbsent(serviceKey, sk -> new HashSet<>()));
   }
 
-
   // TODO
   public String getGatewayHost(String serviceKey) {
     // returns the gateway representation of the service key.
@@ -352,6 +351,10 @@ public class ZoolServiceHub {
     }
   }
 
+  /**
+   * returns the current http port that the http server is serving on.
+   * @return the current port, an integer.
+   */
   private int getCurrentPort() {
     int defaultPort = port;
     int currentPort;

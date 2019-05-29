@@ -30,10 +30,19 @@ public class Zool {
   private String serviceMapNode;
   private String gatewayMapNode;
 
+  /**
+   * Constructor
+   *
+   * @param zoolDataFlow a {@link ZoolDataFlow}
+   */
   public Zool(ZoolDataFlow zoolDataFlow) {
     this.zoolDataFlow = zoolDataFlow;
   }
 
+  /**
+   * Returns the gateway map node.
+   * @return a String, the gateway map node name.
+   */
   public String getGatewayMapNode() {
     return gatewayMapNode;
   }
@@ -69,10 +78,18 @@ public class Zool {
     return host;
   }
 
+  /**
+   * Set the Zookeeper host url
+   * @param host the host, e.g. 127.0.0.1
+   */
   public void setHost(String host) {
     this.host = host;
   }
 
+  /**
+   * Get the port
+   * @return an int
+   */
   public int getPort() {
     return port;
   }
@@ -86,6 +103,11 @@ public class Zool {
     this.port = port;
   }
 
+  /**
+   * The zookeeper timeout value
+   *
+   * @return an int
+   */
   public int getTimeout() {
     return timeout;
   }
@@ -116,13 +138,18 @@ public class Zool {
     return Collections.emptyList();
   }
 
+  /**
+   * The underlying zookeeper instance.
+   *
+   * @return a {@link ZooKeeper}
+   */
   @Deprecated
   public ZooKeeper getZookeeper() {
     return zoolDataFlow.getZk();
   }
 
   /**
-   * Connect to zookeeper.
+   * Connect to zookeeper, using the host and port.
    */
   public synchronized void connect() {
     if (!connected.get()) {
@@ -147,9 +174,8 @@ public class Zool {
     }
   }
 
-
   /**
-   * Returns the connection status.
+   * Returns the connection flag. <code>true</code> if we're connected, <code>false</code> otherwise
    *
    * @return a boolean.
    */
@@ -180,11 +206,11 @@ public class Zool {
   }
 
   /**
-   * Create a ZK Node.
+   * Create a {@link ZooKeeper} Node on the remote zookeeper quarum
    *
    * @param path the path to create the node
    * @param data the data to push to the node
-   * @param acls ACLS
+   * @param acls The ACL to create the node against
    * @param mode the create mode.
    * @return true if the node was created.
    */
@@ -203,7 +229,7 @@ public class Zool {
   }
 
   /**
-   * Plugs a DataSink (e.g. stop draining data)
+   * Plugs a {@link ZoolDataSink} (e.g. stop draining data)
    *
    * @param dataSink the data sink to plug
    */
