@@ -1,6 +1,9 @@
 # Zool
 Zool is an interface for synchronizing microservice configuration on Apache Zookeeper.
 
+## JavaDocs
+Read them [Here](https://decoded4620.github.io/Zool/docs/javadoc/)
+
 ## How to Zool
 ### Implement a Zool Client
 You can Implement your own Zool Client simply by extending the Zool Abstract
