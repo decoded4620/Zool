@@ -374,10 +374,10 @@ public class ZoolServiceHub {
    * @return a String that uniquely identifies this host in the service key cluster on zookeeper.
    */
   private String getPubDns() {
-    // You must set the environment variable denoted in DeployConstants
+    // You must set the environment variable denoted in EnvironmentConstants
     // for both dev and prod PUB DNS to run the container application.
     return System.getenv(
-        isProd ? DeployConstants.ENV_PUB_DNS : DeployConstants.ENV_DEV_PUB_DNS) + ':' + getCurrentPort();
+        isProd ? EnvironmentConstants.PROD_SERVER_DNS : EnvironmentConstants.DEV_SERVER_DNS) + ':' + getCurrentPort();
   }
 
   /**
