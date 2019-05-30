@@ -46,6 +46,7 @@ public class ZoolServiceHub {
   private AtomicLong gatewayHostIdx = new AtomicLong(0);
   private AtomicLong hostIdx = new AtomicLong(0);
 
+
   @Inject
   public ZoolServiceHub(Zool zool, ExecutorService executorService) {
     this.zoolClient = zool;
@@ -220,8 +221,7 @@ public class ZoolServiceHub {
       if (millServiceMap.isEmpty() || hostCount <= 1) {
         LOG.info("Polling again since host count only include ourselves");
         executorService.submit(() -> this.poll(pubDns, servicesNodeName, 750));
-      }
-      else {
+      } else {
         executorService.submit(() -> this.poll(pubDns, servicesNodeName, pollingInterval));
       }
 
@@ -248,10 +248,10 @@ public class ZoolServiceHub {
   }
 
   private void onServiceNodeData(String serviceNodePath, byte[] data) {
-    NetworkUtil.getMaybeCanonicalLocalhostName().ifPresent(localhostUrl -> {
-      ZoolUtil.debugIf(() -> "Booting up a " + (isProd ? "Production" : "Dev") + " host@" + localhostUrl);
-      this.bootServicesHub(serviceNodePath, localhostUrl);
-    });
+
+    ZoolUtil.debugIf(() -> "Booting up a " + (isProd ? "Production" : "Dev"));
+    this.bootServicesHub(serviceNodePath);
+
   }
 
   /**
@@ -353,6 +353,7 @@ public class ZoolServiceHub {
 
   /**
    * returns the current http port that the http server is serving on.
+   *
    * @return the current port, an integer.
    */
   private int getCurrentPort() {
@@ -376,22 +377,39 @@ public class ZoolServiceHub {
   private String getPubDns() {
     // You must set the environment variable denoted in EnvironmentConstants
     // for both dev and prod PUB DNS to run the container application.
-    return System.getenv(
-        isProd ? EnvironmentConstants.PROD_SERVER_DNS : EnvironmentConstants.DEV_SERVER_DNS) + ':' + getCurrentPort();
+    return Optional.ofNullable(
+        System.getenv(isProd ? EnvironmentConstants.PROD_SERVER_DNS : EnvironmentConstants.DEV_SERVER_DNS))
+        .map(value -> {
+          final String pubDns = value + ':' + getCurrentPort();
+          LOG.info("Announcing as " + serviceKey + " host on: " + pubDns);
+          return pubDns;
+        })
+        .orElseGet(() -> {
+          LOG.error(
+              "Environment Expected to have " + EnvironmentConstants.PROD_SERVER_DNS + ", and " + EnvironmentConstants.DEV_SERVER_DNS + " keys");
+          System.getenv().forEach((k, v) -> LOG.error(k + " = " + v));
+          return null;
+        });
   }
+
 
   /**
    * Boots the hub with a service node path, and localhost url.
    *
    * @param serviceNodePath service node path
-   * @param localhostUrl    the localhost url.
    */
-  private void bootServicesHub(final String serviceNodePath, final String localhostUrl) {
-    ZoolUtil.debugIf(() -> "bootServicesHub -> " + serviceNodePath + " on " + localhostUrl);
+  private void bootServicesHub(final String serviceNodePath) {
     String pubDns = getPubDns();
 
+    if (pubDns == null) {
+      throw new IllegalArgumentException("Environment variables are not set for PROD or LOCAL server dns!");
+    }
+    LOG.info("Booting Service Hub, my node path is: " + serviceNodePath + ", on host: " + pubDns);
+
+    ZoolUtil.debugIf(() -> "bootServicesHub -> " + serviceNodePath + " on " + pubDns + " with pub dns: " + pubDns);
     collectServiceNodeChildren(pubDns, serviceNodePath);
-    final String instancePath = serviceNodePath + '/' + localhostUrl + ':' + getCurrentPort();
+    final String instanceKey = Base64.getEncoder().encodeToString((pubDns + ':' + getCurrentPort()).getBytes());
+    final String instancePath = serviceNodePath + '/' + instanceKey;
 
     // watch for service map node changes
     // when new services come online, or die
