@@ -1,4 +1,7 @@
 # Zool
+
+<img src="./docs/images/zuul.jpg" width="33%">
+
 Zool is an interface for synchronizing microservice configuration on Apache Zookeeper.
 
 ## JavaDocs
