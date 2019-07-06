@@ -17,8 +17,8 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":42,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../com/decoded/zool/EnvironmentConstants.html" title="class in com.decoded.zool"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interface in com.decoded.zool"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?com/decoded/zool/Zool.html" target="_top">Frames</a></li>
@@ -108,7 +108,8 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">Zool</span>
 extends java.lang.Object</pre>
-<div class="block">A Zookeeper Client interface</div>
+<div class="block">Zool is a Zookeeper Interface Client for Microservice Configuration and Coordination Zool can act as both the
+ announcer hub, or the client zookeeperHost which announces itself among the other hosts on the network.</div>
 </li>
 </ul>
 </div>
@@ -141,7 +142,7 @@ extends java.lang.Object</pre>
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colLast" scope="col">Method and Description</th>
@@ -149,7 +150,7 @@ extends java.lang.Object</pre>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#connect--">connect</a></span>()</code>
-<div class="block">Connect to zookeeper, using the host and port.</div>
+<div class="block">Connect to zookeeper, using the zookeeper Host and port.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -169,32 +170,36 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#drain-java.lang.String-boolean-java.util.function.BiConsumer-java.lang.Object-">drain</a></span>(java.lang.String&nbsp;path,
+     boolean&nbsp;watch,
+     java.util.function.BiConsumer&lt;java.lang.String,byte[]&gt;&nbsp;dataHandler,
+     java.lang.Object&nbsp;ctx)</code>
+<div class="block">Dump data from the path to the data handler.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#drain-com.decoded.zool.ZoolDataSink-">drain</a></span>(<a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a>&nbsp;dataSink)</code>
 <div class="block">Add a data handler</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#drainStop-com.decoded.zool.ZoolDataSink-">drainStop</a></span>(<a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a>&nbsp;dataSink)</code>
 <div class="block">Plugs a <a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool"><code>ZoolDataSink</code></a> (e.g.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getChildren-java.lang.String-">getChildren</a></span>(java.lang.String&nbsp;path)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getChildren-java.lang.String-boolean-">getChildren</a></span>(java.lang.String&nbsp;path,
+           boolean&nbsp;watch)</code>
 <div class="block">Get Children nodes at a specific path.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getGatewayMapNode--">getGatewayMapNode</a></span>()</code>
-<div class="block">Returns the gateway map node.</div>
-</td>
-</tr>
 <tr id="i7" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getHost--">getHost</a></span>()</code>
-<div class="block">The zookeeper host url</div>
+<td class="colFirst"><code>byte[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getData-java.lang.String-">getData</a></span>(java.lang.String&nbsp;node)</code>
+<div class="block">Get the data from a node directly.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
@@ -214,9 +219,9 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
-<td class="colFirst"><code>org.apache.zookeeper.ZooKeeper</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getZookeeper--">getZookeeper</a></span>()</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getZookeeperHost--">getZookeeperHost</a></span>()</code>
+<div class="block">The zookeeper host url</div>
 </td>
 </tr>
 <tr id="i12" class="altColor">
@@ -227,38 +232,45 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#nodeExists-java.lang.String-">nodeExists</a></span>(java.lang.String&nbsp;path)</code>
+<div class="block">True if the node at path already exists</div>
+</td>
+</tr>
+<tr id="i14" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#removeNode-java.lang.String-">removeNode</a></span>(java.lang.String&nbsp;path)</code>
 <div class="block">Remove a node</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setGatewayMapNode-java.lang.String-">setGatewayMapNode</a></span>(java.lang.String&nbsp;gatewayMapNode)</code>
-<div class="block">Set the name of the node pertaining to the gateway map.</div>
-</td>
-</tr>
 <tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setHost-java.lang.String-">setHost</a></span>(java.lang.String&nbsp;host)</code>
-<div class="block">Set the Zookeeper host url</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setPort-int-">setPort</a></span>(int&nbsp;port)</code>
+<div class="block">Zookeeper zookeeper Host port</div>
 </td>
 </tr>
 <tr id="i16" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setPort-int-">setPort</a></span>(int&nbsp;port)</code>
-<div class="block">Zookeeper host port</div>
-</td>
-</tr>
-<tr id="i17" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setServiceMapNode-java.lang.String-">setServiceMapNode</a></span>(java.lang.String&nbsp;serviceMapNode)</code>
 <div class="block">Set the name of the node pertaining to the service map</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setTimeout-int-">setTimeout</a></span>(int&nbsp;timeout)</code>
 <div class="block">Timeout for zk calls.</div>
+</td>
+</tr>
+<tr id="i18" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setZookeeperHost-java.lang.String-">setZookeeperHost</a></span>(java.lang.String&nbsp;zookeeperHost)</code>
+<div class="block">Set the Zookeeper host url</div>
+</td>
+</tr>
+<tr id="i19" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#updateNode-java.lang.String-byte:A-">updateNode</a></span>(java.lang.String&nbsp;path,
+          byte[]&nbsp;data)</code>
+<div class="block">Updates the node through the dataflow.</div>
 </td>
 </tr>
 </table>
@@ -289,7 +301,8 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Zool</h4>
-<pre>public&nbsp;Zool(<a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a>&nbsp;zoolDataFlow)</pre>
+<pre>@Inject
+public&nbsp;Zool(<a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a>&nbsp;zoolDataFlow)</pre>
 <div class="block">Constructor</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -305,34 +318,6 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="getGatewayMapNode--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getGatewayMapNode</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getGatewayMapNode()</pre>
-<div class="block">Returns the gateway map node.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>a String, the gateway map node name.</dd>
-</dl>
-</li>
-</ul>
-<a name="setGatewayMapNode-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setGatewayMapNode</h4>
-<pre>public&nbsp;void&nbsp;setGatewayMapNode(java.lang.String&nbsp;gatewayMapNode)</pre>
-<div class="block">Set the name of the node pertaining to the gateway map.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>gatewayMapNode</code> - the name of a gateway map node.</dd>
-</dl>
-</li>
-</ul>
 <a name="getServiceMapNode--">
 <!--   -->
 </a>
@@ -356,13 +341,13 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getHost--">
+<a name="getZookeeperHost--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getHost</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getHost()</pre>
+<h4>getZookeeperHost</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getZookeeperHost()</pre>
 <div class="block">The zookeeper host url</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -370,17 +355,17 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="setHost-java.lang.String-">
+<a name="setZookeeperHost-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>setHost</h4>
-<pre>public&nbsp;void&nbsp;setHost(java.lang.String&nbsp;host)</pre>
+<h4>setZookeeperHost</h4>
+<pre>public&nbsp;void&nbsp;setZookeeperHost(java.lang.String&nbsp;zookeeperHost)</pre>
 <div class="block">Set the Zookeeper host url</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>host</code> - the host, e.g. 127.0.0.1</dd>
+<dd><code>zookeeperHost</code> - the host for zookeeper, e.g. 127.0.0.1</dd>
 </dl>
 </li>
 </ul>
@@ -405,7 +390,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setPort</h4>
 <pre>public&nbsp;void&nbsp;setPort(int&nbsp;port)</pre>
-<div class="block">Zookeeper host port</div>
+<div class="block">Zookeeper zookeeper Host port</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>port</code> - the port.</dd>
@@ -440,35 +425,21 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getChildren-java.lang.String-">
+<a name="getChildren-java.lang.String-boolean-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getChildren</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getChildren(java.lang.String&nbsp;path)</pre>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getChildren(java.lang.String&nbsp;path,
+                                                    boolean&nbsp;watch)</pre>
 <div class="block">Get Children nodes at a specific path.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>path</code> - the path</dd>
+<dd><code>watch</code> - to continue to watch the node at "path" so that new additional children will cause notification</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the list of nodes.</dd>
-</dl>
-</li>
-</ul>
-<a name="getZookeeper--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getZookeeper</h4>
-<pre>@Deprecated
-public&nbsp;org.apache.zookeeper.ZooKeeper&nbsp;getZookeeper()</pre>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
-<div class="block">The underlying zookeeper instance.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>a <code>ZooKeeper</code></dd>
 </dl>
 </li>
 </ul>
@@ -479,7 +450,7 @@ public&nbsp;org.apache.zookeeper.ZooKeeper&nbsp;getZookeeper()</pre>
 <li class="blockList">
 <h4>connect</h4>
 <pre>public&nbsp;void&nbsp;connect()</pre>
-<div class="block">Connect to zookeeper, using the host and port.</div>
+<div class="block">Connect to zookeeper, using the zookeeper Host and port.</div>
 </li>
 </ul>
 <a name="disconnect--">
@@ -544,6 +515,40 @@ public&nbsp;org.apache.zookeeper.ZooKeeper&nbsp;getZookeeper()</pre>
 </dl>
 </li>
 </ul>
+<a name="updateNode-java.lang.String-byte:A-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateNode</h4>
+<pre>public&nbsp;boolean&nbsp;updateNode(java.lang.String&nbsp;path,
+                          byte[]&nbsp;data)</pre>
+<div class="block">Updates the node through the dataflow.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>path</code> - The path to update</dd>
+<dd><code>data</code> - the data to update with</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>true if the update occurred.</dd>
+</dl>
+</li>
+</ul>
+<a name="nodeExists-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>nodeExists</h4>
+<pre>public&nbsp;boolean&nbsp;nodeExists(java.lang.String&nbsp;path)</pre>
+<div class="block">True if the node at path already exists</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>path</code> - the path</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a boolean</dd>
+</dl>
+</li>
+</ul>
 <a name="drainStop-com.decoded.zool.ZoolDataSink-">
 <!--   -->
 </a>
@@ -561,7 +566,7 @@ public&nbsp;org.apache.zookeeper.ZooKeeper&nbsp;getZookeeper()</pre>
 <a name="drain-com.decoded.zool.ZoolDataSink-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>drain</h4>
 <pre>public&nbsp;void&nbsp;drain(<a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a>&nbsp;dataSink)</pre>
@@ -569,6 +574,42 @@ public&nbsp;org.apache.zookeeper.ZooKeeper&nbsp;getZookeeper()</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>dataSink</code> - the data sink to plug</dd>
+</dl>
+</li>
+</ul>
+<a name="getData-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getData</h4>
+<pre>public&nbsp;byte[]&nbsp;getData(java.lang.String&nbsp;node)</pre>
+<div class="block">Get the data from a node directly.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>node</code> - a node.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the byte[] data.</dd>
+</dl>
+</li>
+</ul>
+<a name="drain-java.lang.String-boolean-java.util.function.BiConsumer-java.lang.Object-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>drain</h4>
+<pre>public&nbsp;void&nbsp;drain(java.lang.String&nbsp;path,
+                  boolean&nbsp;watch,
+                  java.util.function.BiConsumer&lt;java.lang.String,byte[]&gt;&nbsp;dataHandler,
+                  java.lang.Object&nbsp;ctx)</pre>
+<div class="block">Dump data from the path to the data handler.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>path</code> - the path to drain data from</dd>
+<dd><code>watch</code> - the watch flag</dd>
+<dd><code>dataHandler</code> - the data handler.</dd>
+<dd><code>ctx</code> - the context (optional)</dd>
 </dl>
 </li>
 </ul>
@@ -599,7 +640,7 @@ public&nbsp;org.apache.zookeeper.ZooKeeper&nbsp;getZookeeper()</pre>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../com/decoded/zool/EnvironmentConstants.html" title="class in com.decoded.zool"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interface in com.decoded.zool"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?com/decoded/zool/Zool.html" target="_top">Frames</a></li>

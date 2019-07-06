@@ -30,10 +30,14 @@ dependencies {
     Map<String, String> dependencies = globalConf.appDependencies
     Map<String, String> testDependencies = globalConf.testDependencies
 // https://mvnrepository.com/artifact/com.google.inject/guice
-    compile dependencies.guice;
+    compile dependencies.guice
 
     compile dependencies.apacheCommons3
     compile dependencies.zookeeper
+    compile dependencies.jacksonDataBind
+    compile dependencies.jacksonDataFormatXML
+    compile dependencies.jacksonDataFormatYAML
+    implementation  dependencies.stereohttp
 
     testCompile testDependencies.junit
     testCompile testDependencies.assertJCore

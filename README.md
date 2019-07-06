@@ -76,11 +76,11 @@ private void onZoolServicesNoData(String path) {
 }
 ```
 ## Zool Service Hub
-Zool Service Hub is a wrapper around Zool which allows a container application to become aware of the zookeeper network by announcing itself, and also getting a copy of the other hosts that have already announced. Each host connected to the same Zookeeper quarum gets a copy of the entire map.  
+Zool Service Hub is a wrapper around Zool which allows a container application to become aware of the zookeeper network by announcing itself, and also getting a copy of the other hosts that have already announced. Each zookeeperHost connected to the same Zookeeper quarum gets a copy of the entire map.  
 
 The ServiceHub can be Injected with JavaX or Guice injection and requires a Zool instance, and an ExecutorService
 ```java
-// ZoolServiceHub binding in your Container Module
+ZoolAnnouncerHub
 bind(ZoolServiceHub.class).asEagerSingleton();
 ```
 Then you can set it up like so:
@@ -93,7 +93,7 @@ public YourClass(ZoolServiceHub microServicesHub) {
 // zk port
 microServicesHub.setPort(2181);
 
-// the service key that this host will live in
+// the service key that this zookeeperHost will live in
 microServicesHub.setServiceKey("userService");
 // how often to get updates from zk
 microServicesHub.setPollingInterval(2000);
@@ -106,7 +106,7 @@ microServicesHub.start();
 
 You can later stop the hub:
 ```java
-// stops the service hub (unannouncing effectively your services host)
+// stops the service hub (unannouncing effectively your services zookeeperHost)
 microServicesHub.stop();
 ```
 To get known services based on the gateway service map and service keys:

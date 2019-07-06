@@ -1,20 +1,23 @@
 package com.decoded.zool;
 
+import com.google.inject.Inject;
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+
+import static com.decoded.zool.ZoolLoggingUtil.infoT;
 
 
 /**
- * A Zookeeper Client interface
+ * Zool is a Zookeeper Interface Client for Microservice Configuration and Coordination Zool can act as both the
+ * announcer hub, or the client zookeeperHost which announces itself among the other hosts on the network.
  */
 public class Zool {
   private static final Logger LOG = LoggerFactory.getLogger(Zool.class);
@@ -24,36 +27,19 @@ public class Zool {
   // thread safety
   private AtomicBoolean connected = new AtomicBoolean(false);
 
-  private String host = "localhost";
+  private String zookeeperHost = "localhost";
   private int port = 2181;
   private int timeout = 10000;
   private String serviceMapNode;
-  private String gatewayMapNode;
 
   /**
    * Constructor
    *
    * @param zoolDataFlow a {@link ZoolDataFlow}
    */
+  @Inject
   public Zool(ZoolDataFlow zoolDataFlow) {
     this.zoolDataFlow = zoolDataFlow;
-  }
-
-  /**
-   * Returns the gateway map node.
-   * @return a String, the gateway map node name.
-   */
-  public String getGatewayMapNode() {
-    return gatewayMapNode;
-  }
-
-  /**
-   * Set the name of the node pertaining to the gateway map.
-   *
-   * @param gatewayMapNode the name of a gateway map node.
-   */
-  public void setGatewayMapNode(String gatewayMapNode) {
-    this.gatewayMapNode = gatewayMapNode;
   }
 
   public String getServiceMapNode() {
@@ -74,20 +60,22 @@ public class Zool {
    *
    * @return the url.
    */
-  public String getHost() {
-    return host;
+  public String getZookeeperHost() {
+    return zookeeperHost;
   }
 
   /**
    * Set the Zookeeper host url
-   * @param host the host, e.g. 127.0.0.1
+   *
+   * @param zookeeperHost the host for zookeeper, e.g. 127.0.0.1
    */
-  public void setHost(String host) {
-    this.host = host;
+  public void setZookeeperHost(String zookeeperHost) {
+    this.zookeeperHost = zookeeperHost;
   }
 
   /**
    * Get the port
+   *
    * @return an int
    */
   public int getPort() {
@@ -95,7 +83,7 @@ public class Zool {
   }
 
   /**
-   * Zookeeper host port
+   * Zookeeper zookeeper Host port
    *
    * @param port the port.
    */
@@ -124,40 +112,25 @@ public class Zool {
   /**
    * Get Children nodes at a specific path.
    *
-   * @param path the path
+   * @param path  the path
+   * @param watch to continue to watch the node at "path" so that new additional children will cause notification
+   *
    * @return the list of nodes.
    */
-  public List<String> getChildren(String path) {
-    try {
-      return zoolDataFlow.getZk().getChildren(path, false);
-    } catch (InterruptedException ex) {
-      LOG.error("Interrupted", ex);
-    } catch (KeeperException ex) {
-      LOG.error("Keeper Exception", ex);
-    }
-    return Collections.emptyList();
+  public List<String> getChildren(String path, boolean watch) {
+    return zoolDataFlow.getChildNodesAtPath(path, watch);
   }
 
   /**
-   * The underlying zookeeper instance.
-   *
-   * @return a {@link ZooKeeper}
-   */
-  @Deprecated
-  public ZooKeeper getZookeeper() {
-    return zoolDataFlow.getZk();
-  }
-
-  /**
-   * Connect to zookeeper, using the host and port.
+   * Connect to zookeeper, using the zookeeper Host and port.
    */
   public synchronized void connect() {
     if (!connected.get()) {
+      infoT(LOG, "connecting to ZooKeeper on " + zookeeperHost + ":" + port + ", timeout: " + timeout);
       connected.set(true);
 
-      this.zoolDataFlow.setHost(host)
-          .setPort(port)
-          .setTimeout(timeout);
+      // set the zookeeperHost port and timeout for the main zool data flow.
+      this.zoolDataFlow.setHost(zookeeperHost).setPort(port).setTimeout(timeout);
 
       // run the zoolDataFlow in its own thread.
       zoolDataFlow.connect();
@@ -169,6 +142,7 @@ public class Zool {
    */
   public synchronized void disconnect() {
     if (connected.get()) {
+      infoT(LOG, "disconnecting from ZooKeeper on " + zookeeperHost + ":" + port);
       connected.set(false);
       zoolDataFlow.terminate();
     }
@@ -187,22 +161,12 @@ public class Zool {
    * Remove a node
    *
    * @param path the path to remove
+   *
    * @return a boolean, true if the path was either removed, or didn't exist to begin with.
    */
   public boolean removeNode(String path) {
-    try {
-      zoolDataFlow.getZk().delete(path, 1);
-      return true;
-    } catch (KeeperException ex) {
-      if (ex.code() == KeeperException.Code.NONODE) {
-        return true;
-      }
-      // if can't create, try to remove our node.
-    } catch (InterruptedException ex) {
-      LOG.error("Interrupted exception", ex);
-    }
-
-    return false;
+    infoT(LOG, "Deleting ZK Node " + zookeeperHost + ":" + port + " - " + path);
+    return zoolDataFlow.delete(path);
   }
 
   /**
@@ -212,20 +176,37 @@ public class Zool {
    * @param data the data to push to the node
    * @param acls The ACL to create the node against
    * @param mode the create mode.
+   *
    * @return true if the node was created.
    */
   public boolean createNode(String path, byte[] data, ArrayList<ACL> acls, CreateMode mode) {
-    try {
-      zoolDataFlow.getZk().create(path, data, acls, mode);
-      return true;
-    } catch (KeeperException ex) {
-      LOG.error("Keeper exception creating node: ", ex);
-      // if can't create, try to remove our node.
-    } catch (InterruptedException ex) {
-      LOG.error("Interrupted exception", ex);
-    }
+    LOG.info(Thread.currentThread()
+        .getName() + ":Creating ZK Node " + zookeeperHost + ":" + port + " - " + path + " with " + data.length + " " + "bytes [" + mode
+        .name() + "]");
+    return zoolDataFlow.create(path, data, acls, mode);
+  }
 
-    return false;
+  /**
+   * Updates the node through the dataflow.
+   *
+   * @param path The path to update
+   * @param data the data to update with
+   *
+   * @return true if the update occurred.
+   */
+  public boolean updateNode(String path, byte[] data) {
+    return zoolDataFlow.update(path, data);
+  }
+
+  /**
+   * True if the node at path already exists
+   *
+   * @param path the path
+   *
+   * @return a boolean
+   */
+  public boolean nodeExists(String path) {
+    return zoolDataFlow.nodeExists(path);
   }
 
   /**
@@ -234,6 +215,7 @@ public class Zool {
    * @param dataSink the data sink to plug
    */
   public void drainStop(ZoolDataSink dataSink) {
+    LOG.info("Drain stop on sink (node): " + dataSink.getZNode());
     zoolDataFlow.drainStop(dataSink);
   }
 
@@ -243,7 +225,31 @@ public class Zool {
    * @param dataSink the data sink to plug
    */
   public void drain(ZoolDataSink dataSink) {
+    LOG.info("Drain to sink (node): " + dataSink.getZNode());
     zoolDataFlow.drain(dataSink);
   }
 
+  /**
+   * Get the data from a node directly.
+   *
+   * @param node a node.
+   *
+   * @return the byte[] data.
+   */
+  public byte[] getData(String node) {
+    return zoolDataFlow.get(node);
+  }
+
+  /**
+   * Dump data from the path to the data handler.
+   *
+   * @param path        the path to drain data from
+   * @param watch       the watch flag
+   * @param dataHandler the data handler.
+   * @param ctx         the context (optional)
+   */
+  public void drain(String path, boolean watch, BiConsumer<String, byte[]> dataHandler, Object ctx) {
+    LOG.info("Drain to handler (on node): " + path + " watch: " + watch);
+    zoolDataFlow.drain(path, watch, dataHandler, ctx);
+  }
 }

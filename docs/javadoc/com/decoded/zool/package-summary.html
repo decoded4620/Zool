@@ -88,8 +88,7 @@
 <tr class="rowColor">
 <td class="colFirst"><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></td>
 <td class="colLast">
-<div class="block">This object is designed to transport data directly from ZooKeeper signals
- to your <a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool"><code>ZoolDataSink</code></a> instances.</div>
+<div class="block">This object is designed to transport data directly from ZooKeeper signals to your <a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool"><code>ZoolDataSink</code></a> instances.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -116,15 +115,28 @@
 </tr>
 <tbody>
 <tr class="altColor">
+<td class="colFirst"><a href="../../../com/decoded/zool/ElasticInterval.html" title="class in com.decoded.zool">ElasticInterval</a></td>
+<td class="colLast">
+<div class="block">This can be used to start an interval aggressive and expand it until its max value</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><a href="../../../com/decoded/zool/EnvironmentConstants.html" title="class in com.decoded.zool">EnvironmentConstants</a></td>
 <td class="colLast">
 <div class="block">Constants used for the Zool Environment with respect the the local machine.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><a href="../../../com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></td>
 <td class="colLast">
-<div class="block">A Zookeeper Client interface</div>
+<div class="block">Zool is a Zookeeper Interface Client for Microservice Configuration and Coordination Zool can act as both the
+ announcer hub, or the client zookeeperHost which announces itself among the other hosts on the network.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a></td>
+<td class="colLast">
+<div class="block">DataObject stored on zookeeper for zool announced hosts in each service node created.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -146,15 +158,52 @@
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><a href="../../../com/decoded/zool/ZoolServiceHub.html" title="class in com.decoded.zool">ZoolServiceHub</a></td>
+<td class="colFirst"><a href="../../../com/decoded/zool/ZoolLoggingUtil.html" title="class in com.decoded.zool">ZoolLoggingUtil</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../../com/decoded/zool/ZoolReader.html" title="class in com.decoded.zool">ZoolReader</a></td>
+<td class="colLast">
+<div class="block">Reads Data from Zool</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><a href="../../../com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></td>
 <td class="colLast">
 <div class="block">This class wraps Zool and interacts with it as a Service announcement portal.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><a href="../../../com/decoded/zool/ZoolUtil.html" title="class in com.decoded.zool">ZoolUtil</a></td>
+<td class="colFirst"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></td>
 <td class="colLast">
-<div class="block">Zool Utilities for shorthand common operations</div>
+<div class="block">An abstract Zool Service Mesh Client which can be extended for querying a Zool Service.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><a href="../../../com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool">ZoolSystemUtil</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../../com/decoded/zool/ZoolWriter.html" title="class in com.decoded.zool">ZoolWriter</a></td>
+<td class="colLast">
+<div class="block">A Mechanism for writing data to Zookeeper through <a href="../../../com/decoded/zool/Zool.html" title="class in com.decoded.zool"><code>Zool</code></a></div>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li class="blockList">
+<table class="typeSummary" border="0" cellpadding="3" cellspacing="0" summary="Exception Summary table, listing exceptions, and an explanation">
+<caption><span>Exception Summary</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Exception</th>
+<th class="colLast" scope="col">Description</th>
+</tr>
+<tbody>
+<tr class="altColor">
+<td class="colFirst"><a href="../../../com/decoded/zool/ZoolServiceException.html" title="class in com.decoded.zool">ZoolServiceException</a></td>
+<td class="colLast">
+<div class="block">For Zool Specific Exception Class.</div>
 </td>
 </tr>
 </tbody>

@@ -9,18 +9,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static com.decoded.zool.ZoolLoggingUtil.debugIf;
+import static com.decoded.zool.ZoolLoggingUtil.infoT;
 
 
 /**
  * Watcher and Stat Callback for Zookeeper DataSink objects.
  */
 public class ZoolDataBridgeImpl implements ZoolDataBridge {
-  private static final Logger LOG = LoggerFactory.getLogger(ZoolDataBridgeImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ZoolDataBridge.class);
   private ZooKeeper zk;
   private String zkNodePath;
   private boolean dead;
   private ZoolWatcher zoolWatcher;
   private byte[] prevData;
+
 
   /**
    * Constructor
@@ -35,7 +41,7 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
     this.zoolWatcher = zoolWatcher;
     // Get things started by checking if the node onZNodeData. We are going
     // to be completely event driven
-    signal();
+    signal(Event.EventType.None);
   }
 
   @Override
@@ -49,7 +55,8 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
       // Something has changed on the node, let's find out
       // only handle our own node.
       if (path != null && path.equals(zkNodePath)) {
-        signal();
+        debugIf(LOG, () -> "Processing: " + event.getPath() + " " + zkNodePath);
+        signal(event.getType());
       }
     }
   }
@@ -57,6 +64,7 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
   @Override
   public void processResult(int rc, String path, Object ctx, Stat stat) {
     final Code code = Code.get(rc);
+    debugIf(LOG, () -> "Process Result: " + path + ", Stat: " + stat);
     switch (code) {
       case OK:
       case NONODE:
@@ -68,19 +76,39 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
         return;
       default:
         // Retry errors
-        signal();
+        signal(Event.EventType.None);
         return;
     }
 
-    status(code);
+    if (null != path && path.equals(zkNodePath)) {
+      status(code);
+    }
   }
 
   /**
    * Singles for a zookeeper state check for our node path
    */
-  private void signal() {
+  private void signal(Event.EventType eventType) {
     if (zk != null) {
+      infoT(LOG, "signal on event " + eventType.name() + ": " + zkNodePath);
       zk.exists(zkNodePath, true, this, null);
+
+      if (eventType.equals(Event.EventType.NodeChildrenChanged)) {
+        debugIf(LOG, () -> "Node Children Changed on " + zkNodePath);
+        try {
+          List<String> children = zk.getChildren(zkNodePath, true);
+
+          if (children.isEmpty()) {
+            zoolWatcher.onNoChildren(zkNodePath);
+          } else {
+            zoolWatcher.onChildren(zkNodePath, children);
+          }
+        } catch (KeeperException ex) {
+          LOG.error("Could not get children, zookeeper error", ex);
+        } catch (InterruptedException ex) {
+          LOG.error("Interrupted while fetching children", ex);
+        }
+      }
     }
   }
 
@@ -91,6 +119,7 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
    */
   private void status(Code statusCode) {
     byte[] newData = null;
+    infoT(LOG, "status: " + zkNodePath + " -> " + statusCode.name());
     if (statusCode == Code.OK) {
       try {
         newData = zk.getData(zkNodePath, false, null);
@@ -100,15 +129,29 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
         LOG.error("Could not get new data at: " + zkNodePath, e);
       } catch (InterruptedException e) {
         LOG.error("Interrupted while fetching new data from: " + zkNodePath, e);
+        zoolWatcher.onDataNotExists(zkNodePath);
         return;
       }
 
-      if ((newData == null && newData != prevData) || (newData != null && !Arrays.equals(prevData, newData))) {
+      if ((newData == null && null != prevData) || (newData != null && !Arrays.equals(prevData, newData))) {
         if (zoolWatcher != null) {
           zoolWatcher.onData(this.zkNodePath, newData);
         }
         prevData = newData;
       }
+
+      Optional.ofNullable(zoolWatcher).ifPresent(zkwatcher -> {
+        if (zkwatcher.isReadChildren()) {
+          try {
+            infoT(LOG, "getting children of " + zkNodePath);
+            zk.getChildren(zkNodePath, false);
+          } catch (KeeperException ex) {
+            LOG.error("Could not get children of " + zkNodePath);
+          } catch (InterruptedException ex) {
+            LOG.error("Interrupted while getting children at " + zkNodePath);
+          }
+        }
+      });
     } else if (statusCode == Code.NONODE) {
       if (zoolWatcher != null) {
         zoolWatcher.onDataNotExists(zkNodePath);
