@@ -2,17 +2,212 @@
 
 <img src="./docs/images/zuul.jpg" width="60%">
 
-Zool is an interface for synchronizing microservice configuration on Apache Zookeeper.
+Zool is an interface for synchronizing live configuration using Apache Zookeeper.
 
 ## JavaDocs
 Read them [Here](https://decoded4620.github.io/Zool/docs/javadoc/)
 
-## How to Zool
+## Implementing a Dynamic Discovery Service Container using Zool
+
+### Main Server Module Example
+
+#### Configure your Zool Service Host
+
+This example is using a Hocon Style Application Configuration but Zool is completely unopinionated on your configuration setup. This can be approached by any means.
+
+```
+hocon {
+  # Stereo Http Configuration
+  httpClient {
+    maxOutboundConnections=5
+    maxOutboundConnectionsPerRoute=5
+  }
+
+  # Zookeeper Configuration
+  zookeeper {
+    client {
+      zkConnectTimeout=10000
+      zkHost="127.0.0.1"
+      zkPort=2181
+      zkServiceMapNode="/services"
+    }
+  }
+}
+```
+
+
+#### Create a custom Stereo Http Client
+Stereo Http is how Zool communicates with external services. It is an Apache NIO based http client.
+The main demonstration shown is setting up the maxOutboundConnections and maxOutboundConnectionsPerRoute properties of the [Stereo Http Client](http://github.com/decoded4620/StereoHttp). The client doesn't have to be extended, but this is a convenient way to inject your own configuration, in this exmaple, Hocon Style Configuration from Play
+```java
+/**
+ * Custom Extension of Stereo Http Client
+ */
+public class MyOwnStereoHttpClient extends StereoHttpClient {
+  private static final Logger LOG = LoggerFactory.getLogger(MyOwnStereoHttpClient.class);
+  private Cfg cfg;
+
+  @Inject
+  public MyOwnStereoHttpClient(ExecutorService executorService) {
+    super(executorService);
+    
+
+    // TODO create your Cfg instance here using your own means (e.g. play Hocon Configuration, or other)
+
+    setMaxOutboundConnectionsPerRoute(cfg.maxOutboundConnectionsPerRoute);
+    setMaxOutboundConnections(cfg.maxOutboundConnections);
+  }
+
+  public static class Cfg {
+    public int maxOutboundConnections = 100;
+    public int maxOutboundConnectionsPerRoute = 30;
+  }
+}
+```
+
+#### Create a custom DynamicDiscovery Server Module
+Note: This is using examples from Play Framework, however, there is no requirement that your zool service must be a Play Service. This is just an example to get up and running.
+Zool does however use Guice Injection (which is operable with Java's builtin in `@Inject` mechanisms). In these examples, we're using the Abstract Module to perform bindings from Zool Interfaces to
+their implementations.
+
+```java
+public class DynamicDiscoveryServiceModule extends AbstractModule {
+  private static final Logger LOG = LoggerFactory.getLogger(DynamicDiscoveryServiceModule.class);
+
+  @Override
+  protected void configure() {
+    // -----------------
+    // Http client using a custom configured client. The custom class is shown below, and is only used
+    // to ingest Hocon Configuration from the Container Application (in this case the example is play)
+    bind(StereoHttpClient.class).to(MyOwnStereoHttpClient.class).asEagerSingleton();
+
+    // Handles host network and debugging data.
+    bind(HostDataProvider.class).asEagerSingleton();
+    // setup scheduled executor service
+    bind(ScheduledExecutorService.class).toInstance(Executors.newScheduledThreadPool(10));
+    // setup executor services
+    bind(ExecutorService.class).toInstance(Executors.newFixedThreadPool(10));
+    // -----------------
+    // Zookeeper
+    bind(ZoolDataFlow.class).to(ZoolDataFlowImpl.class).asEagerSingleton();
+    bind(Zool.class).to(Zilli.class).asEagerSingleton();
+    bind(ZoolServiceMeshClient.class).to(ZilliClient.class).asEagerSingleton();
+    // -----------------
+    // ZoolServiceHub
+    bind(ZoolServiceMesh.class).asEagerSingleton();
+  }
+}
+```
+
+Given a similar setup to the above, your Play Module now becomes a Zool Enabled Service Module. If you are running a Zookeeper Server at the specified ip / port in the zookeeper.client configuration path shown above
+
+### Implement an Application Container or similar object
+In Play Framework Style apps, we can implement application containers which are startup and shutdown aware. This means that when Play Framework starts or stops, they provide hooks in order to handle the events.
+
+```java
+package com.my.app.container;
+
+import com.decoded.polldancer.PollDancer;
+import com.decoded.stereohttp.StereoHttpClient;
+import com.google.inject.Inject;
+import play.Logger;
+import play.api.Play;
+import play.inject.ApplicationLifecycle;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+
+
+/**
+ * This class represents the main web container, and its connection to the orchestrated system that is milli
+ * microservices.
+ * This system includes zookeeper, and several service pools, each host an instance of the Milli Application Container.
+ * <p>
+ * The container can announce to zookeeper, and detect available zookeeper services on the same Quorum.
+ * <p>
+ * The container provides access to an Http Client ({@link StereoHttpClient}) which can be used to make requests to
+ * webservices,
+ * milli micro services, or any http accessible Url.
+ */
+@SuppressWarnings("WeakerAccess")
+public class ApplicationContainer {
+
+  private static final Logger.ALogger LOG = Logger.of(ApplicationContainer.class);
+
+  private final Cfg cfg;
+  private final ExecutorService executorService;
+
+  private final ApplicationLifecycle lifecycle;
+  private StereoHttpClient stereoHttpClient;
+
+  @Inject
+  public ApplicationContainer(
+                              ModuleConfiguration moduleConfiguration,
+                              ExecutorService executorService,
+                              StereoHttpClient httpClient,
+                              ApplicationLifecycle lifecycle,
+                              ZoolServiceMesh zoolService
+  ) {
+    LOG.info("Milli Application is starting...");
+    
+    // TODO setup Cfg instance using Hocon or other means.. 
+
+    this.lifecycle = lifecycle;
+    this.moduleConfiguration = moduleConfiguration;
+    this.executorService = executorService;
+    this.stereoHttpClient = httpClient;
+    this.zoolService = zoolService;
+
+    startHttpClient();
+  }
+
+  /**
+   * Get the conf configuration for the container (play application uses Hocon)
+   * @return the hocon configuration
+   */
+  public Cfg getCfg() {
+    return cfg;
+  }
+
+  /**
+   * Start the Http Client.
+   */
+  protected void startHttpClient() {
+    if (stereoHttpClient.canStart()) {
+      LOG.info("Starting http client on thread: " + Thread.currentThread().getName());
+      stereoHttpClient.start();
+    }
+  }
+
+  /**
+   * Container Configuration
+   */
+  public static class Cfg {
+    /**
+     * This value controls the name for the process under zookeeper barrier node for this api. Each host will have
+     * its own e.g.
+     * barrierNode/services/myService_192.168.0.1
+     */
+    public String zookeeperServiceKey = "";
+
+    /**
+     * The zookeeper gateway service key for ping / announce / updating dd hosts.
+     */
+    public String zookeeperGatewayKey = "";
+
+    /**
+     * Production flag.
+     */
+    public boolean isProd = false;
+  }
+}
+
+```
 ### Implement a Zool Client
 You can Implement your own Zool Client simply by extending the Zool Abstract
 
 ```java
-package your.cool.app.ZoolClient;
+package your.cool.discoveryservice.ZoolClient;
 
 import com.decoded.zool.Zool;
 import com.decoded.zool.ZoolDataFlow;
@@ -54,6 +249,7 @@ this.zoolClient.connect();
 ``` 
 
 ### Handle Data (or Not)
+
 ```java
 private void onGatewayData(String path, byte[] data) {
   
