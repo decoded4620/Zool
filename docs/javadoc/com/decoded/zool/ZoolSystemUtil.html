@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9,"i1":9,"i2":9};
+var methods = {"i0":9,"i1":9,"i2":9,"i3":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -36,7 +36,8 @@ var activeTableTab = "activeTableTab";
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="../../../com/decoded/zool/package-summary.html">Package</a></li>
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
 <li class="navBarCell1Rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
 <li><a href="../../../deprecated-list.html">Deprecated</a></li>
@@ -144,18 +145,24 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>static java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getChildNodesAtPath-org.apache.zookeeper.ZooKeeper-java.lang.String-boolean-">getChildNodesAtPath</a></span>(org.apache.zookeeper.ZooKeeper&nbsp;zk,
+                   java.lang.String&nbsp;path,
+                   boolean&nbsp;watch)</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>static int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getCurrentPort-int-">getCurrentPort</a></span>(int&nbsp;fallbackPort)</code>
 <div class="block">returns the current http port that the http server is serving on.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrl-boolean-">getLocalHostUrl</a></span>(boolean&nbsp;isProd)</code>
-<div class="block">Return sthe host url</div>
+<div class="block">Returns the host url</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrlAndPort-boolean-int-">getLocalHostUrlAndPort</a></span>(boolean&nbsp;isProd,
                       int&nbsp;fallbackPort)</code>
@@ -224,7 +231,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getLocalHostUrl</h4>
 <pre>public static&nbsp;java.lang.String&nbsp;getLocalHostUrl(boolean&nbsp;isProd)</pre>
-<div class="block">Return sthe host url</div>
+<div class="block">Returns the host url</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>isProd</code> - boolean flag for production vs. dev</dd>
@@ -236,7 +243,7 @@ extends java.lang.Object</pre>
 <a name="getLocalHostUrlAndPort-boolean-int-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getLocalHostUrlAndPort</h4>
 <pre>public static&nbsp;java.lang.String&nbsp;getLocalHostUrlAndPort(boolean&nbsp;isProd,
@@ -249,6 +256,17 @@ extends java.lang.Object</pre>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a String that uniquely identifies this host in the service key cluster on zookeeper.</dd>
 </dl>
+</li>
+</ul>
+<a name="getChildNodesAtPath-org.apache.zookeeper.ZooKeeper-java.lang.String-boolean-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getChildNodesAtPath</h4>
+<pre>public static&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getChildNodesAtPath(org.apache.zookeeper.ZooKeeper&nbsp;zk,
+                                                                   java.lang.String&nbsp;path,
+                                                                   boolean&nbsp;watch)</pre>
 </li>
 </ul>
 </li>
@@ -267,7 +285,8 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="../../../com/decoded/zool/package-summary.html">Package</a></li>
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
 <li class="navBarCell1Rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
 <li><a href="../../../deprecated-list.html">Deprecated</a></li>

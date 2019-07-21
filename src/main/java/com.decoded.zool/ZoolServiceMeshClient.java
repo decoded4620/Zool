@@ -171,7 +171,8 @@ public abstract class ZoolServiceMeshClient {
     LOG.info("Service Gateway Client starting, gateway key is : " + zoolGatewayKey);
 
     CompletableFuture<List<String>> serviceMeshFuture = new CompletableFuture<>();
-    final String gatewayPath = zoolReader.getZool().getServiceMapNode() + '/' + zoolGatewayKey;
+    // join the path with zk separator
+    final String gatewayPath = ZConst.PathSeparator.ZK.join(zoolReader.getZool().getServiceMapNode(), zoolGatewayKey);
     // we will load the gateway service path once, and then talk to one of the hosts which handle gateway
     // discovery to get updates. This avoids overloading zookeeper nodes.
 

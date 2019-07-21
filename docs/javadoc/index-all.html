@@ -30,7 +30,8 @@
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="com/decoded/zool/package-summary.html">Package</a></li>
+<li><a href="overview-summary.html">Overview</a></li>
+<li>Package</li>
 <li>Class</li>
 <li><a href="overview-tree.html">Tree</a></li>
 <li><a href="deprecated-list.html">Deprecated</a></li>
@@ -66,7 +67,7 @@
 <!--   -->
 </a></div>
 <!-- ========= END OF TOP NAVBAR ========= -->
-<div class="contentContainer"><a href="#I:A">A</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:H">H</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:W">W</a>&nbsp;<a href="#I:Z">Z</a>&nbsp;<a name="I:A">
+<div class="contentContainer"><a href="#I:A">A</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:J">J</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:W">W</a>&nbsp;<a href="#I:Z">Z</a>&nbsp;<a name="I:A">
 <!--   -->
 </a>
 <h2 class="title">A</h2>
@@ -90,6 +91,8 @@
 <div class="block">Clear the service mesh (internal use, and for implementations of the zool client).</div>
 </dd>
 <dt><a href="com/decoded/zool/package-summary.html">com.decoded.zool</a> - package com.decoded.zool</dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/decoded/zool/dataflow/package-summary.html">com.decoded.zool.dataflow</a> - package com.decoded.zool.dataflow</dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/Zool.html#connect--">connect()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></dt>
 <dd>
@@ -141,6 +144,8 @@
 </a>
 <h2 class="title">D</h2>
 <dl>
+<dt><a href="com/decoded/zool/dataflow/DataFlowState.html" title="enum in com.decoded.zool.dataflow"><span class="typeNameLink">DataFlowState</span></a> - Enum in <a href="com/decoded/zool/dataflow/package-summary.html">com.decoded.zool.dataflow</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolLoggingUtil.html#debugIf-org.slf4j.Logger-java.util.function.Supplier-">debugIf(Logger, Supplier&lt;String&gt;)</a></span> - Static method in class com.decoded.zool.<a href="com/decoded/zool/ZoolLoggingUtil.html" title="class in com.decoded.zool">ZoolLoggingUtil</a></dt>
 <dd>
 <div class="block">Performance aware debug logging without the boilerplate.</div>
@@ -263,11 +268,19 @@
 <dd>
 <div class="block">Get the children of a node</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataBridgeImpl.html#getChildNodesAtPath-java.lang.String-boolean-">getChildNodesAtPath(String, boolean)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataBridgeImpl.html" title="class in com.decoded.zool">ZoolDataBridgeImpl</a></dt>
+<dd>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>
+<div class="block"><span class="deprecationComment">use <a href="com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool"><code>ZoolSystemUtil</code></a></span></div>
+</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlow.html#getChildNodesAtPath-java.lang.String-boolean-">getChildNodesAtPath(String, boolean)</a></span> - Method in interface com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></dt>
 <dd>
 <div class="block">Returns the set of node names that are child nodes of the specified path</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlowImpl.html#getChildNodesAtPath-java.lang.String-boolean-">getChildNodesAtPath(String, boolean)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolSystemUtil.html#getChildNodesAtPath-org.apache.zookeeper.ZooKeeper-java.lang.String-boolean-">getChildNodesAtPath(ZooKeeper, String, boolean)</a></span> - Static method in class com.decoded.zool.<a href="com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool">ZoolSystemUtil</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/Zool.html#getChildren-java.lang.String-boolean-">getChildren(String, boolean)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></dt>
 <dd>
@@ -299,7 +312,7 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrl-boolean-">getLocalHostUrl(boolean)</a></span> - Static method in class com.decoded.zool.<a href="com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool">ZoolSystemUtil</a></dt>
 <dd>
-<div class="block">Return sthe host url</div>
+<div class="block">Returns the host url</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrlAndPort-boolean-int-">getLocalHostUrlAndPort(boolean, int)</a></span> - Static method in class com.decoded.zool.<a href="com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool">ZoolSystemUtil</a></dt>
 <dd>
@@ -308,6 +321,10 @@
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#getMeshNetwork--">getMeshNetwork()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>
 <div class="block">Returns the map of services</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#getMeshState--">getMeshState()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
+<dd>
+<div class="block">Returns the last known mesh state based on connectivity to zookeeper.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlowImpl.html#getName--">getName()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></dt>
 <dd>&nbsp;</dd>
@@ -347,6 +364,8 @@
 <dd>
 <div class="block">Gets a set of known services from zookeeper.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlowImpl.html#getState--">getState()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/Zool.html#getTimeout--">getTimeout()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></dt>
 <dd>
 <div class="block">The zookeeper timeout value</div>
@@ -392,16 +411,6 @@
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#getZoolWriter--">getZoolWriter()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>
 <div class="block">Public api to attach custom zool channel writers</div>
-</dd>
-</dl>
-<a name="I:H">
-<!--   -->
-</a>
-<h2 class="title">H</h2>
-<dl>
-<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#healthCheckServiceHost-java.lang.String-java.lang.String-">healthCheckServiceHost(String, String)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
-<dd>
-<div class="block">Health checks a host, and cleans it if necessary</div>
 </dd>
 </dl>
 <a name="I:I">
@@ -461,6 +470,14 @@
 <dd>
 <div class="block">Returns true if the service key and hostUri represent THIS host instance.</div>
 </dd>
+</dl>
+<a name="I:J">
+<!--   -->
+</a>
+<h2 class="title">J</h2>
+<dl>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZConst.PathSeparator.html#join-java.lang.String...-">join(String...)</a></span> - Method in enum com.decoded.zool.<a href="com/decoded/zool/ZConst.PathSeparator.html" title="enum in com.decoded.zool">ZConst.PathSeparator</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <a name="I:L">
 <!--   -->
@@ -608,6 +625,8 @@
 </a>
 <h2 class="title">S</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZConst.PathSeparator.html#sep--">sep()</a></span> - Method in enum com.decoded.zool.<a href="com/decoded/zool/ZConst.PathSeparator.html" title="enum in com.decoded.zool">ZConst.PathSeparator</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolAnnouncement.html#serialize-com.decoded.zool.ZoolAnnouncement-">serialize(ZoolAnnouncement)</a></span> - Static method in class com.decoded.zool.<a href="com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a></dt>
 <dd>
 <div class="block">Serialize a <a href="com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool"><code>ZoolAnnouncement</code></a> into a byte[] of json data</div>
@@ -718,14 +737,6 @@
 <dd>
 <div class="block">Stop the client connection completely, resetting the announcement flag.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#suppressServiceHost-java.lang.String-java.lang.String-byte:A-">suppressServiceHost(String, String, byte[])</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
-<dd>
-<div class="block">Suppress a service host that has been announced.</div>
-</dd>
-<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#suppressServiceHost-java.lang.String-java.lang.String-java.lang.String-">suppressServiceHost(String, String, String)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
-<dd>
-<div class="block">Suppresses a service host, removing it from the mesh network.</div>
-</dd>
 </dl>
 <a name="I:T">
 <!--   -->
@@ -765,6 +776,39 @@
 <div class="block">update service mesh directly.</div>
 </dd>
 </dl>
+<a name="I:V">
+<!--   -->
+</a>
+<h2 class="title">V</h2>
+<dl>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/dataflow/DataFlowState.html#valueOf-java.lang.String-">valueOf(String)</a></span> - Static method in enum com.decoded.zool.dataflow.<a href="com/decoded/zool/dataflow/DataFlowState.html" title="enum in com.decoded.zool.dataflow">DataFlowState</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this type with the specified name.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZConst.PathSeparator.html#valueOf-java.lang.String-">valueOf(String)</a></span> - Static method in enum com.decoded.zool.<a href="com/decoded/zool/ZConst.PathSeparator.html" title="enum in com.decoded.zool">ZConst.PathSeparator</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this type with the specified name.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.MeshState.html#valueOf-java.lang.String-">valueOf(String)</a></span> - Static method in enum com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.MeshState.html" title="enum in com.decoded.zool">ZoolServiceMesh.MeshState</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this type with the specified name.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/dataflow/DataFlowState.html#values--">values()</a></span> - Static method in enum com.decoded.zool.dataflow.<a href="com/decoded/zool/dataflow/DataFlowState.html" title="enum in com.decoded.zool.dataflow">DataFlowState</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum type, in
+the order they are declared.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZConst.PathSeparator.html#values--">values()</a></span> - Static method in enum com.decoded.zool.<a href="com/decoded/zool/ZConst.PathSeparator.html" title="enum in com.decoded.zool">ZConst.PathSeparator</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum type, in
+the order they are declared.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.MeshState.html#values--">values()</a></span> - Static method in enum com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.MeshState.html" title="enum in com.decoded.zool">ZoolServiceMesh.MeshState</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum type, in
+the order they are declared.</div>
+</dd>
+</dl>
 <a name="I:W">
 <!--   -->
 </a>
@@ -792,6 +836,14 @@
 </a>
 <h2 class="title">Z</h2>
 <dl>
+<dt><a href="com/decoded/zool/ZConst.html" title="class in com.decoded.zool"><span class="typeNameLink">ZConst</span></a> - Class in <a href="com/decoded/zool/package-summary.html">com.decoded.zool</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZConst.html#ZConst--">ZConst()</a></span> - Constructor for class com.decoded.zool.<a href="com/decoded/zool/ZConst.html" title="class in com.decoded.zool">ZConst</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/decoded/zool/ZConst.PathSeparator.html" title="enum in com.decoded.zool"><span class="typeNameLink">ZConst.PathSeparator</span></a> - Enum in <a href="com/decoded/zool/package-summary.html">com.decoded.zool</a></dt>
+<dd>
+<div class="block">Convenience for path separation</div>
+</dd>
 <dt><a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool"><span class="typeNameLink">Zool</span></a> - Class in <a href="com/decoded/zool/package-summary.html">com.decoded.zool</a></dt>
 <dd>
 <div class="block">Zool is a Zookeeper Interface Client for Microservice Configuration and Coordination Zool can act as both the
@@ -815,7 +867,7 @@
 <dd>
 <div class="block">Watcher and Stat Callback for Zookeeper DataSink objects.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataBridgeImpl.html#ZoolDataBridgeImpl-org.apache.zookeeper.ZooKeeper-java.lang.String-com.decoded.zool.ZoolWatcher-">ZoolDataBridgeImpl(ZooKeeper, String, ZoolWatcher)</a></span> - Constructor for class com.decoded.zool.<a href="com/decoded/zool/ZoolDataBridgeImpl.html" title="class in com.decoded.zool">ZoolDataBridgeImpl</a></dt>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataBridgeImpl.html#ZoolDataBridgeImpl-org.apache.zookeeper.ZooKeeper-java.lang.String-com.decoded.zool.ZoolWatcher-boolean-">ZoolDataBridgeImpl(ZooKeeper, String, ZoolWatcher, boolean)</a></span> - Constructor for class com.decoded.zool.<a href="com/decoded/zool/ZoolDataBridgeImpl.html" title="class in com.decoded.zool">ZoolDataBridgeImpl</a></dt>
 <dd>
 <div class="block">Constructor</div>
 </dd>
@@ -873,6 +925,8 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#ZoolServiceMesh-com.decoded.zool.ZoolReader-com.decoded.zool.ZoolWriter-java.util.concurrent.ExecutorService-java.util.concurrent.ScheduledExecutorService-com.decoded.stereohttp.StereoHttpClient-">ZoolServiceMesh(ZoolReader, ZoolWriter, ExecutorService, ScheduledExecutorService, StereoHttpClient)</a></span> - Constructor for class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/decoded/zool/ZoolServiceMesh.MeshState.html" title="enum in com.decoded.zool"><span class="typeNameLink">ZoolServiceMesh.MeshState</span></a> - Enum in <a href="com/decoded/zool/package-summary.html">com.decoded.zool</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool"><span class="typeNameLink">ZoolServiceMeshClient</span></a> - Class in <a href="com/decoded/zool/package-summary.html">com.decoded.zool</a></dt>
 <dd>
 <div class="block">An abstract Zool Service Mesh Client which can be extended for querying a Zool Service.</div>
@@ -896,7 +950,7 @@
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolWriter.html#ZoolWriter-com.decoded.zool.Zool-">ZoolWriter(Zool)</a></span> - Constructor for class com.decoded.zool.<a href="com/decoded/zool/ZoolWriter.html" title="class in com.decoded.zool">ZoolWriter</a></dt>
 <dd>&nbsp;</dd>
 </dl>
-<a href="#I:A">A</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:H">H</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:W">W</a>&nbsp;<a href="#I:Z">Z</a>&nbsp;</div>
+<a href="#I:A">A</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:J">J</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:W">W</a>&nbsp;<a href="#I:Z">Z</a>&nbsp;</div>
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
 <div class="bottomNav"><a name="navbar.bottom">
 <!--   -->
@@ -906,7 +960,8 @@
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="com/decoded/zool/package-summary.html">Package</a></li>
+<li><a href="overview-summary.html">Overview</a></li>
+<li>Package</li>
 <li>Class</li>
 <li><a href="overview-tree.html">Tree</a></li>
 <li><a href="deprecated-list.html">Deprecated</a></li>

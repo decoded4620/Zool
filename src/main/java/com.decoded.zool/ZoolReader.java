@@ -165,7 +165,7 @@ public class ZoolReader {
    * @return list of child names.
    */
   public List<String> getChildNodes(String nodePath, boolean watch) {
-    debugIf(LOG, () -> "Get children: " + nodePath + ", watch: " + watch);
+    debugIf(LOG, () -> "Get child nodes under: " + nodePath + ", keeping watch: " + watch);
     if (watch && !channels.containsKey(nodePath)) {
       LOG.warn(
           "There are no Zool Data Sink objects listening to channel: " + nodePath + ", so updates will not be " +

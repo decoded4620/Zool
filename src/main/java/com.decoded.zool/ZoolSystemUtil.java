@@ -1,8 +1,13 @@
 package com.decoded.zool;
 
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -30,7 +35,7 @@ public class ZoolSystemUtil {
 
 
   /**
-   * Return sthe host url
+   * Returns the host url
    *
    * @param isProd boolean flag for production vs. dev
    *
@@ -67,6 +72,27 @@ public class ZoolSystemUtil {
               "Environment Expected to have " + EnvironmentConstants.PROD_SERVER_DNS + ", and " + EnvironmentConstants.DEV_SERVER_DNS + " keys");
           return "";
         });
+  }
+
+
+  public static List<String> getChildNodesAtPath(final ZooKeeper zk, final String path, final boolean watch) {
+    if(zk != null) {
+      LOG.info("get child nodes at path: " + path + ", watch " + watch);
+      try {
+        Stat stat = zk.exists(path, watch);
+        if (stat != null) {
+          return zk.getChildren(path, watch);
+        } else {
+          LOG.warn("no node exists at " + path);
+        }
+
+      } catch (InterruptedException ex) {
+        LOG.error("Interrupted", ex);
+      } catch (KeeperException ex) {
+        LOG.error("Keeper Exception", ex);
+      }
+    }
+    return Collections.emptyList();
   }
 
 }

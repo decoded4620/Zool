@@ -17,8 +17,8 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var methods = {"i0":42,"i1":10,"i2":10,"i3":10};
+var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
@@ -36,7 +36,8 @@ var activeTableTab = "activeTableTab";
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="../../../com/decoded/zool/package-summary.html">Package</a></li>
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
 <li class="navBarCell1Rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
 <li><a href="../../../deprecated-list.html">Deprecated</a></li>
@@ -154,9 +155,10 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#ZoolDataBridgeImpl-org.apache.zookeeper.ZooKeeper-java.lang.String-com.decoded.zool.ZoolWatcher-">ZoolDataBridgeImpl</a></span>(org.apache.zookeeper.ZooKeeper&nbsp;zk,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#ZoolDataBridgeImpl-org.apache.zookeeper.ZooKeeper-java.lang.String-com.decoded.zool.ZoolWatcher-boolean-">ZoolDataBridgeImpl</a></span>(org.apache.zookeeper.ZooKeeper&nbsp;zk,
                   java.lang.String&nbsp;zkNodePath,
-                  <a href="../../../com/decoded/zool/ZoolWatcher.html" title="interface in com.decoded.zool">ZoolWatcher</a>&nbsp;zoolWatcher)</code>
+                  <a href="../../../com/decoded/zool/ZoolWatcher.html" title="interface in com.decoded.zool">ZoolWatcher</a>&nbsp;zoolWatcher,
+                  boolean&nbsp;readChildren)</code>
 <div class="block">Constructor</div>
 </td>
 </tr>
@@ -170,22 +172,31 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#getChildNodesAtPath-java.lang.String-boolean-">getChildNodesAtPath</a></span>(java.lang.String&nbsp;path,
+                   boolean&nbsp;watch)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">use <a href="../../../com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool"><code>ZoolSystemUtil</code></a></span></div>
+</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#isDead--">isDead</a></span>()</code>
 <div class="block">Returns true if the databridge is dead and no longer connected to zookeeper.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#process-org.apache.zookeeper.WatchedEvent-">process</a></span>(org.apache.zookeeper.WatchedEvent&nbsp;event)</code>&nbsp;</td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#processResult-int-java.lang.String-java.lang.Object-org.apache.zookeeper.data.Stat-">processResult</a></span>(int&nbsp;rc,
              java.lang.String&nbsp;path,
@@ -214,7 +225,7 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ZoolDataBridgeImpl-org.apache.zookeeper.ZooKeeper-java.lang.String-com.decoded.zool.ZoolWatcher-">
+<a name="ZoolDataBridgeImpl-org.apache.zookeeper.ZooKeeper-java.lang.String-com.decoded.zool.ZoolWatcher-boolean-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -222,13 +233,15 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 <h4>ZoolDataBridgeImpl</h4>
 <pre>public&nbsp;ZoolDataBridgeImpl(org.apache.zookeeper.ZooKeeper&nbsp;zk,
                           java.lang.String&nbsp;zkNodePath,
-                          <a href="../../../com/decoded/zool/ZoolWatcher.html" title="interface in com.decoded.zool">ZoolWatcher</a>&nbsp;zoolWatcher)</pre>
+                          <a href="../../../com/decoded/zool/ZoolWatcher.html" title="interface in com.decoded.zool">ZoolWatcher</a>&nbsp;zoolWatcher,
+                          boolean&nbsp;readChildren)</pre>
 <div class="block">Constructor</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>zk</code> - <code>ZooKeeper</code> instance</dd>
 <dd><code>zkNodePath</code> - the path to a node to monitor on the server</dd>
 <dd><code>zoolWatcher</code> - the listener to handle events.</dd>
+<dd><code>readChildren</code> - to read or not to read children.</dd>
 </dl>
 </li>
 </ul>
@@ -269,6 +282,25 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 </dl>
 </li>
 </ul>
+<a name="getChildNodesAtPath-java.lang.String-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getChildNodesAtPath</h4>
+<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getChildNodesAtPath(java.lang.String&nbsp;path,
+                                                            boolean&nbsp;watch)</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">use <a href="../../../com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool"><code>ZoolSystemUtil</code></a></span></div>
+<div class="block">Safely returns child nodes at a specific path.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>path</code> - the path to get children from.</dd>
+<dd><code>watch</code> - boolean</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a list of Strings.</dd>
+</dl>
+</li>
+</ul>
 <a name="isDead--">
 <!--   -->
 </a>
@@ -302,7 +334,8 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="../../../com/decoded/zool/package-summary.html">Package</a></li>
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
 <li class="navBarCell1Rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
 <li><a href="../../../deprecated-list.html">Deprecated</a></li>
