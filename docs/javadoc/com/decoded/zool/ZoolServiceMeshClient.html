@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -210,51 +210,72 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i10" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#ignoreHost-java.lang.String-java.lang.String-">ignoreHost</a></span>(java.lang.String&nbsp;serviceKey,
+          java.lang.String&nbsp;hostUrl)</code>
+<div class="block">Ignore a single host from a client perspective.</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#isAnnounced--">isAnnounced</a></span>()</code>
 <div class="block">Returns <code>true</code> if this client is announced on the network, and has knowledge of the other hosts.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>protected boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#isKnownByDiscoveryService--">isKnownByDiscoveryService</a></span>()</code>
+<div class="block">Returns <code>true</code> if the current zool service mesh
+ contains our host</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#isProd--">isProd</a></span>()</code>
 <div class="block">Returns <code>true</code> if this is a prod client.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#setProd-boolean-">setProd</a></span>(boolean&nbsp;prod)</code>
 <div class="block">Set the production (vs development) flag.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#setZoolGatewayKey-java.lang.String-">setZoolGatewayKey</a></span>(java.lang.String&nbsp;zoolGatewayKey)</code>
 <div class="block">Change the zool gateway key to point to a custom dynamic discovery service.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#setZoolServiceKey-java.lang.String-">setZoolServiceKey</a></span>(java.lang.String&nbsp;zoolServiceKey)</code>
 <div class="block">Change the service key for this client.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>java.util.concurrent.CompletableFuture&lt;java.util.List&lt;java.lang.String&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#start--">start</a></span>()</code>
 <div class="block">Initializes the client gateway knowledge.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#stop--">stop</a></span>()</code>
 <div class="block">Stop the client connection completely, resetting the announcement flag.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#updateServiceMesh-java.util.Map-">updateServiceMesh</a></span>(java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;freshMesh)</code>
-<div class="block">update service mesh directly.</div>
+<div class="block">Update the service mesh without option to reannounce</div>
+</td>
+</tr>
+<tr id="i20" class="altColor">
+<td class="colFirst"><code>&lt;X&gt;&nbsp;java.util.concurrent.CompletableFuture&lt;X&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#updateServiceMesh-java.util.Map-java.util.function.BiFunction-">updateServiceMesh</a></span>(java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;freshMesh,
+                 java.util.function.BiFunction&lt;java.lang.String,java.lang.Integer,java.util.concurrent.CompletableFuture&lt;X&gt;&gt;&nbsp;announcer)</code>
+<div class="block">Update the service mesh directly.</div>
 </td>
 </tr>
 </table>
@@ -345,6 +366,27 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
+<a name="updateServiceMesh-java.util.Map-java.util.function.BiFunction-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>updateServiceMesh</h4>
+<pre>public&nbsp;&lt;X&gt;&nbsp;java.util.concurrent.CompletableFuture&lt;X&gt;&nbsp;updateServiceMesh(java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;freshMesh,
+                                                                       java.util.function.BiFunction&lt;java.lang.String,java.lang.Integer,java.util.concurrent.CompletableFuture&lt;X&gt;&gt;&nbsp;announcer)</pre>
+<div class="block">Update the service mesh directly. If an announce method is passed in it is invoked in the event that the current
+ host is not known in the updated map. (this re-announces)</div>
+<dl>
+<dt><span class="paramLabel">Type Parameters:</span></dt>
+<dd><code>X</code> - type returned by the announcer future</dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>freshMesh</code> - the new data to update with.</dd>
+<dd><code>announcer</code> - the announcer function that returns a future of some type</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a <code>CompletableFuture</code> of X</dd>
+</dl>
+</li>
+</ul>
 <a name="updateServiceMesh-java.util.Map-">
 <!--   -->
 </a>
@@ -352,10 +394,41 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>updateServiceMesh</h4>
 <pre>public&nbsp;void&nbsp;updateServiceMesh(java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;freshMesh)</pre>
-<div class="block">update service mesh directly.</div>
+<div class="block">Update the service mesh without option to reannounce</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>freshMesh</code> - the new data to update with.</dd>
+<dd><code>freshMesh</code> - the new mesh</dd>
+</dl>
+</li>
+</ul>
+<a name="isKnownByDiscoveryService--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isKnownByDiscoveryService</h4>
+<pre>protected&nbsp;boolean&nbsp;isKnownByDiscoveryService()</pre>
+<div class="block">Returns <code>true</code> if the current zool service mesh
+ contains our host</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a boolean</dd>
+</dl>
+</li>
+</ul>
+<a name="ignoreHost-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>ignoreHost</h4>
+<pre>public&nbsp;void&nbsp;ignoreHost(java.lang.String&nbsp;serviceKey,
+                       java.lang.String&nbsp;hostUrl)</pre>
+<div class="block">Ignore a single host from a client perspective.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>serviceKey</code> - the service key</dd>
+<dd><code>hostUrl</code> - the host url to ignore</dd>
 </dl>
 </li>
 </ul>

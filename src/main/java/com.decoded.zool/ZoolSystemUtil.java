@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 
+/**
+ * A Utility for performing some important zool functions that are used in many places. This is a read only object and
+ * should not modify the Zool System in any way.
+ */
 public class ZoolSystemUtil {
   private static final Logger LOG = LoggerFactory.getLogger(ZoolSystemUtil.class);
   private static final String HTTP_PORT_PROP = "http.port";
@@ -74,9 +78,17 @@ public class ZoolSystemUtil {
         });
   }
 
-
+  /**
+   * Retrieve child nodes at the specified path safely.
+   *
+   * @param zk    zookeeper
+   * @param path  the path
+   * @param watch watch flag
+   *
+   * @return list of child node names
+   */
   public static List<String> getChildNodesAtPath(final ZooKeeper zk, final String path, final boolean watch) {
-    if(zk != null) {
+    if (zk != null) {
       LOG.info("get child nodes at path: " + path + ", watch " + watch);
       try {
         Stat stat = zk.exists(path, watch);
@@ -94,5 +106,4 @@ public class ZoolSystemUtil {
     }
     return Collections.emptyList();
   }
-
 }

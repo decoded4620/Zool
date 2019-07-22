@@ -5,7 +5,6 @@ import com.decoded.zool.dataflow.DataFlowState;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import org.apache.log4j.BasicConfigurator;
-
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
@@ -19,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -31,17 +29,6 @@ public class ZoolTest implements WithAssertions {
   @BeforeClass
   public static void beforeClass() {
     BasicConfigurator.configure();
-  }
-
-  static class ZoolDataWatcher {
-    private static final Logger LOG = LoggerFactory.getLogger(ZoolDataWatcher.class);
-    public void onData(String p, byte[] b) {
-      LOG.info("onData: " + p + ", " + b.length);
-    }
-
-    public void onNoData(String p) {
-      LOG.info("onNoData: " + p);
-    }
   }
 
   @Test
@@ -76,10 +63,6 @@ public class ZoolTest implements WithAssertions {
     assertThat(byteData).isEqualTo(data.noBytes);
 
     mocks.zool.drainStop(mocks.dataSink);
-    verify(mocks.dataFlow, times(1)).watch(eq(mocks.dataSink));
-    verify(mocks.dataFlow, times(1)).unwatch(eq(data.zNode));
-    verify(mocks.dataFlow, times(1)).drain(eq(mocks.dataSink));
-    verify(mocks.dataFlow, times(1)).drainStop(eq(mocks.dataSink));
   }
 
   @Test
@@ -102,10 +85,35 @@ public class ZoolTest implements WithAssertions {
 
     mocks.zool.drainStop(mocks.dataSink);
     verify(mocks.dataFlow, times(1)).get(eq(data.zNode));
+  }
+
+  @Test
+  public void testDrainAndStop() throws Exception {
+    MockData data = new MockData();
+    Mocks mocks = new Mocks(data);
+    Stubbing stubbing = new Stubbing(mocks, data);
+
+    stubbing.stubZookeeperExists(data.zNode, true, data.defaultStat).stubZoolDataFlow(data.zNode, data.byteData);
+
+    mocks.zool.drain(mocks.dataSink);
+    assertThat(mocks.dataFlow.getState()).isEqualTo(DataFlowState.CONNECTED);
+    mocks.zool.drainStop(mocks.dataSink);
     verify(mocks.dataFlow, times(1)).watch(eq(mocks.dataSink));
     verify(mocks.dataFlow, times(1)).unwatch(eq(data.zNode));
     verify(mocks.dataFlow, times(1)).drain(eq(mocks.dataSink));
     verify(mocks.dataFlow, times(1)).drainStop(eq(mocks.dataSink));
+  }
+
+  static class ZoolDataWatcher {
+    private static final Logger LOG = LoggerFactory.getLogger(ZoolDataWatcher.class);
+
+    public void onData(String p, byte[] b) {
+      LOG.info("onData: " + p + ", " + b.length);
+    }
+
+    public void onNoData(String p) {
+      LOG.info("onNoData: " + p);
+    }
   }
 
   /**
@@ -117,13 +125,14 @@ public class ZoolTest implements WithAssertions {
     private String zkHost = "localhost";
     private int zkPort = 2181;
     private int zkTimeout = 500;
-    private byte[] byteData = {0x0,0x1,0x2};
+    private byte[] byteData = {0x0, 0x1, 0x2};
     private byte[] noBytes = new byte[0];
     private Stat defaultStat = new Stat();
     private List<String> noChildren = Collections.emptyList();
     // this list is for just having some random children
     private List<String> someChildren = ImmutableList.of("manny", "moe", "jack");
-    private KeeperException.ConnectionLossException connectionLossException = new KeeperException.ConnectionLossException();
+    private KeeperException.ConnectionLossException connectionLossException
+        = new KeeperException.ConnectionLossException();
   }
 
   /**
@@ -144,41 +153,14 @@ public class ZoolTest implements WithAssertions {
     }
 
     /**
-     * Stub zookeeper to throw a keeper exception
-     * @param path Some node path
-     * @param shouldWatch watch flag
-     * @param keeperException the exception to throw
-     * @return this stubbing
-     * @throws KeeperException
-     * @throws InterruptedException
-     */
-    public Stubbing stubZookeeperExistsException(String path, boolean shouldWatch, KeeperException keeperException) throws KeeperException, InterruptedException {
-      when(mocks.zooKeeper.exists(path, shouldWatch)).thenThrow(keeperException);
-      return this;
-    }
-
-    public Stubbing stubZookeeperExistsInterruption(String path, boolean shouldWatch) throws KeeperException, InterruptedException {
-      when(mocks.zooKeeper.exists(path, shouldWatch)).thenThrow(new InterruptedException());
-      return this;
-    }
-
-    /**
-     * Stub default child names to be returned (non-empty set) regardless of watch flag.
-     * @param path the path
-     * @return Stubbing
-     * @throws Exception
-     */
-    public Stubbing stubSomeZookeeperChildren(String path) throws Exception {
-      when(mocks.zooKeeper.getChildren(eq(path), anyBoolean())).thenReturn(mockData.someChildren);
-      return this;
-    }
-
-    /**
      * Stub Child names to return from zk
-     * @param path the patrh
+     *
+     * @param path       the path
      * @param childNames names of children to return
+     *
      * @return Stubbing
-     * @throws Exception
+     *
+     * @throws Exception if zookeeper chokes
      */
     public Stubbing stubZookeeperChildren(String path, boolean watch, List<String> childNames) throws Exception {
       when(mocks.zooKeeper.getChildren(path, watch)).thenReturn(childNames);
@@ -186,34 +168,12 @@ public class ZoolTest implements WithAssertions {
     }
 
     /**
-     * Stubbing for watch or not.
-     * @param path the path
-     * @param childNames the set of children to return
-     * @return this stubbing
-     * @throws Exception
-     */
-    public Stubbing stubZookeeperChildren(String path, List<String> childNames) throws Exception {
-      when(mocks.zooKeeper.getChildren(eq(path), anyBoolean())).thenReturn(childNames);
-      return this;
-    }
-
-    /**
-     * Throw an exception when asking for child names. Don't stub this at the same time as {@link Stubbing#stubZookeeperChildren(String, boolean, List)}
-     * @param path the path
-     * @param keeperException the exception
-     * @return Stubbing
-     * @throws Exception
-     */
-    public Stubbing stubZookeeperChildrenException(String path, boolean watch, KeeperException keeperException) throws Exception {
-      when(mocks.zooKeeper.getChildren(path, watch)).thenThrow(keeperException);
-      return this;
-    }
-
-    /**
      * Stub the Zool Data Flow, with some customizable inputs
-     * @param zNode
-     * @param defaultByteData
-     * @return
+     *
+     * @param zNode           the node to stub
+     * @param defaultByteData the data to return
+     *
+     * @return Stubbing
      */
     private Stubbing stubZoolDataFlow(String zNode, byte[] defaultByteData) {
       // use defaults from mockData
@@ -249,9 +209,10 @@ public class ZoolTest implements WithAssertions {
 
     /**
      * Alternate constructor to provide more custom mechanism
-     * @param dataSink a custom data sink
+     *
+     * @param dataSink        a custom data sink
      * @param executorService a custom executor service
-     * @param dataFlow a data flow.
+     * @param dataFlow        a data flow.
      */
     public Mocks(ZoolDataSink dataSink, ExecutorService executorService, ZoolDataFlow dataFlow) {
       this.dataSink = dataSink;
@@ -263,16 +224,22 @@ public class ZoolTest implements WithAssertions {
     private Zool createBasicZoolClient(ZoolDataFlow dataFlow) {
       return spy(new TestZoolClient(dataFlow));
     }
-    private ZoolDataBridge createBasicDataBridge(ZooKeeper zooKeeper, String zNode, ZoolWatcher zoolWatcher, boolean readChildren) {
+
+    private ZoolDataBridge createBasicDataBridge(ZooKeeper zooKeeper,
+        String zNode,
+        ZoolWatcher zoolWatcher,
+        boolean readChildren) {
       return spy(new ZoolDataBridgeImpl(zooKeeper, zNode, zoolWatcher, readChildren));
     }
 
     private ZoolDataFlowImpl createBasicDataFlow(ExecutorService executorService) {
       return spy(new ZoolDataFlowImpl(executorService));
     }
+
     private ZoolDataSink createBasicDataSink() {
       return spy(new ZoolDataSink() {
         private boolean readChildren;
+
         @Override
         public ZoolDataSink setReadChildren(final boolean readChildren) {
           this.readChildren = readChildren;
@@ -352,6 +319,7 @@ public class ZoolTest implements WithAssertions {
     private ZoolWatcher createBasicWatcher() {
       return spy(new ZoolWatcher() {
         private boolean readChildren;
+
         @Override
         public ZoolDataSink setReadChildren(final boolean readChildren) {
           this.readChildren = readChildren;
@@ -439,7 +407,7 @@ public class ZoolTest implements WithAssertions {
     private final Cfg cfg;
 
     @Inject
-    public  TestZoolClient(ZoolDataFlow zoolDataFlow) {
+    public TestZoolClient(ZoolDataFlow zoolDataFlow) {
       super(zoolDataFlow);
       cfg = new Cfg();
 
@@ -448,7 +416,6 @@ public class ZoolTest implements WithAssertions {
       setTimeout(cfg.zkConnectTimeout);
       setServiceMapNode(cfg.zkServiceMapNode);
     }
-
   }
 
   public static class Cfg {
@@ -457,6 +424,5 @@ public class ZoolTest implements WithAssertions {
     public int zkPort = 2181;
     public String zkServiceMapNode = "/servicemap";
   }
-
 
 }

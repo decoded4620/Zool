@@ -14,7 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -23,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.decoded.zool.ZoolLoggingUtil.debugIf;
-import static com.decoded.zool.ZoolLoggingUtil.infoT;
+import static com.decoded.zool.ZoolLoggingUtil.infoIf;
 
 
 /**
@@ -143,7 +146,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void connect() {
-    infoT(LOG, "Connecting...");
+    infoIf(LOG, "Connecting...");
     executorService.submit(this);
   }
 
@@ -156,7 +159,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
       // if the above times out / throws an exception, connection will be reset.
       state = zk == null ? DataFlowState.DISCONNECTED : DataFlowState.CONNECTED;
     } else {
-      if(state == DataFlowState.DISCONNECTED) {
+      if (state == DataFlowState.DISCONNECTED) {
         state = DataFlowState.CONNECTING;
       }
 
@@ -407,7 +410,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void run() {
-    infoT(LOG, "String ZoolDataFlow: [" + zNode + "]");
+    infoIf(LOG, "String ZoolDataFlow: [" + zNode + "]");
     try {
       synchronized (this) {
         dataFlowThread = Thread.currentThread();
@@ -450,9 +453,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void onNoChildren(final String zNode) {
-    LOG.info("No Children Received for " + zNode + (dataSinkMap.containsKey(zNode)
-        ? "(Watched!)"
-        : "(Not Watching!)"));
+    LOG.info("No Children Received for " + zNode + (dataSinkMap.containsKey(zNode) ? "(Watched!)" : "(Not Watching!)"));
     Optional.ofNullable(dataSinkMap.get(zNode))
         .ifPresent(handlers -> handlers.stream()
             .filter(ZoolDataSink::isReadChildren)

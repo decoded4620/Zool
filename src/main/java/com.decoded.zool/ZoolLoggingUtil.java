@@ -25,7 +25,9 @@ public class ZoolLoggingUtil {
    * @param logger  the Logger to use
    * @param message the message to log
    */
-  public static void infoT(Logger logger, String message) {
-    logger.info(message);
+  public static void infoIf(Logger logger, Supplier<String> message) {
+    if (logger.isInfoEnabled()) {
+      logger.info(message.get());
+    }
   }
 }

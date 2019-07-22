@@ -19,7 +19,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.decoded.zool.ZoolLoggingUtil.debugIf;
-import static com.decoded.zool.ZoolLoggingUtil.infoT;
+import static com.decoded.zool.ZoolLoggingUtil.infoIf;
 import static com.decoded.zool.ZoolSystemUtil.getLocalHostUrl;
 import static com.decoded.zool.ZoolSystemUtil.getLocalHostUrlAndPort;
 
@@ -48,6 +48,8 @@ public class ZoolServiceMesh {
   private final ExecutorService executorService;
   private final ScheduledExecutorService scheduledExecutorService;
   private final Map<String, Set<String>> meshNetwork = new ConcurrentHashMap<>();
+  private final Map<String, Set<String>> missingReports = new ConcurrentHashMap<>();
+  private final Map<String, Map<String, Runnable>> scheduledMissingHostChecks = new ConcurrentHashMap<>();
   private int serviceHealthCheckTimeout = 500;
   private String discoveryHealthCheckEndpoint = "/discoveryHealthCheck";
   private boolean healthCheckRunning = false;
@@ -62,13 +64,6 @@ public class ZoolServiceMesh {
   private boolean announcementChangeScheduled = false;
   private MeshState meshState = MeshState.STOPPED;
 
-  public enum MeshState {
-    STOPPED,
-    STARTING,
-    RUNNING,
-    STOPPING
-  }
-
   @Inject
   public ZoolServiceMesh(ZoolReader zoolReader,
       ZoolWriter zoolWriter,
@@ -80,15 +75,6 @@ public class ZoolServiceMesh {
     this.executorService = executorService;
     this.scheduledExecutorService = scheduledExecutorService;
     this.stereoHttpClient = stereoHttpClient;
-  }
-
-  /**
-   * Returns the last known mesh state based on connectivity to zookeeper. Only used as a status, no logic within this
-   * class depends on the value of this state.
-   * @return the {@link MeshState}
-   */
-  public MeshState getMeshState() {
-    return meshState;
   }
 
   /**
@@ -120,6 +106,16 @@ public class ZoolServiceMesh {
 
     // corrected idx will always be within range
     return hosts.get((int) (hostIdxHolder.getAndIncrement() % hosts.size()));
+  }
+
+  /**
+   * Returns the last known mesh state based on connectivity to zookeeper. Only used as a status, no logic within this
+   * class depends on the value of this state.
+   *
+   * @return the {@link MeshState}
+   */
+  public MeshState getMeshState() {
+    return meshState;
   }
 
   /**
@@ -255,7 +251,8 @@ public class ZoolServiceMesh {
   public CompletableFuture<Map<String, Set<String>>> start() {
     if (zoolServiceKey == null || zoolServiceKey.isEmpty()) {
       throw new IllegalStateException(
-          "You must supply a zool service key for the service mesh. Here are some examples of good service mesh " + "keys:" + " " + "'discovery', 'gateway', or 'servicediscovery'.");
+          "You must supply a zool service key for the service mesh. Here are some examples of good service mesh " +
+              "keys:" + " " + "'discovery', 'gateway', or 'servicediscovery'.");
     }
 
     meshState = MeshState.STARTING;
@@ -274,7 +271,7 @@ public class ZoolServiceMesh {
       LOG.info("Service: " + serviceMapPath + " received " + serviceNames.size() + " services");
       // if we were stopped prior to this point, bail
       // attempt to announce if children are found, but we're not in the list.
-      this.selfAnnounceGateway(zoolServiceKey);
+      this.announceSelfAsGateway(zoolServiceKey);
 
       // update again
       updateHostsForAllServicesFromZool(serviceNames).thenAccept(voidT -> serviceMeshFuture.complete(getMeshNetwork()));
@@ -282,12 +279,12 @@ public class ZoolServiceMesh {
 
     }, serviceMapPath -> {
       // if no children are found, we'll announce ourselves now
-      this.selfAnnounceGateway(zoolServiceKey);
+      this.announceSelfAsGateway(zoolServiceKey);
       meshState = MeshState.RUNNING;
       serviceMeshFuture.complete(getMeshNetwork());
     });
 
-    infoT(LOG, "Connecting to Zool Service..");
+    infoIf(LOG, () -> "Connecting to Zool Service..");
 
     zoolReader.getZool().connect();
     return serviceMeshFuture;
@@ -321,7 +318,7 @@ public class ZoolServiceMesh {
    * @return a Completable future
    */
   private CompletableFuture<Void> updateHostsForAllServicesFromZool(List<String> serviceKeys) {
-    infoT(LOG, "Updating hosts from Zool for " + serviceKeys.size() + " services");
+    infoIf(LOG, () -> "Updating hosts from Zool for " + serviceKeys.size() + " services");
     if (!serviceKeys.isEmpty()) {
       return CompletableFuture.supplyAsync(() -> {
 
@@ -331,7 +328,8 @@ public class ZoolServiceMesh {
 
         serviceKeys.forEach(serviceKey -> {
           // inner jobs?
-          final String servicePath = ZConst.PathSeparator.ZK.join(getZoolReader().getZool().getServiceMapNode(), serviceKey);
+          final String servicePath = ZConst.PathSeparator.ZK.join(getZoolReader().getZool().getServiceMapNode(),
+              serviceKey);
 
           if (!zoolReader.isReading(servicePath)) {
             zoolReader.readChildren(servicePath, (p, c) -> {
@@ -339,7 +337,7 @@ public class ZoolServiceMesh {
               meshNetwork.remove(serviceKey);
               meshNetwork.computeIfAbsent(serviceKey, x -> new HashSet<>()).addAll(c);
 
-              infoT(LOG, "Updated mesh for " + serviceKey + " to " + c.size() + " total hosts");
+              infoIf(LOG, () -> "Updated mesh for " + serviceKey + " to " + c.size() + " total hosts");
             }, p -> LOG.warn("No hosts found on path " + p));
           } else {
             LOG.warn("Not reading children of " + servicePath + ", its already being read");
@@ -347,7 +345,8 @@ public class ZoolServiceMesh {
         });
 
         int totalHosts = meshNetwork.values().stream().mapToInt(Set::size).sum();
-        infoT(LOG, "Loaded Total Services: " + meshNetwork.size() + " services and " + totalHosts + " total hosts");
+        infoIf(LOG,
+            () -> "Loaded Total Services: " + meshNetwork.size() + " services and " + totalHosts + " total hosts");
         return null;
       }, executorService);
       // update the hosts for each service in a single thread
@@ -357,35 +356,38 @@ public class ZoolServiceMesh {
   }
 
   /**
-   * Boots the hub with a service node path, and localhost url.
+   * Announces this host as a gateway host to Zookeeper
    *
    * @param zoolGatewayKey gateway service node key
    */
-  private void selfAnnounceGateway(final String zoolGatewayKey) {
+  protected void announceSelfAsGateway(final String zoolGatewayKey) {
     if (!this.isAnnounced) {
-      infoT(LOG, "Self Announcing Service mesh host on service key: " + zoolGatewayKey);
+      infoIf(LOG, () -> "Self Announcing Service mesh host on service key: " + zoolGatewayKey);
       zoolGatewayAnnouncement = announceServiceHost(zoolGatewayKey, getLocalHostUrlAndPort(isProd, port));
 
       if (zoolGatewayAnnouncement == null || zoolGatewayAnnouncement.token.length == 0) {
-        LOG.error("Announcement failure");
+        LOG.error("Announcement failure", new ZoolServiceException("Announcement was a failure"));
       } else {
         isAnnounced = true;
 
-        // start stereo
-        stereoHttpClient.start();
+        if (stereoHttpClient.canStart()) {
+          // start stereo
+          stereoHttpClient.start();
+        }
 
+        // initialize the network health check
         scheduleNetworkHealthCheck();
       }
     } else {
-      infoT(LOG, "this is not the first update...");
+      infoIf(LOG, () -> "this is not the first update...");
     }
   }
 
   /**
-   * Schedules a network healthcheck for all known hosts.
+   * Schedules a network health check for all known hosts.
    */
   private void scheduleNetworkHealthCheck() {
-    infoT(LOG, "Scheduling Network health check in: " + internalCleanInterval + " ms");
+    infoIf(LOG, () -> "Scheduling Network health check in: " + internalCleanInterval + " ms");
     if (!healthCheckRunning && !healthCheckScheduled) {
       healthCheckScheduled = true;
       scheduledExecutorService.schedule(() -> {
@@ -393,6 +395,102 @@ public class ZoolServiceMesh {
         this.networkHealthCheck().thenRun(() -> executorService.submit(this::scheduleNetworkHealthCheck));
       }, internalCleanInterval.getAndUpdate(), TimeUnit.MILLISECONDS);
     }
+  }
+
+  /**
+   * Schedules a single health check on a host address
+   *
+   * @param hostAddress a HostAddress object to health check
+   */
+  private void scheduleHostHealthCheck(final HostAddress hostAddress) {
+    LOG.info("Scheduling an ad-hoc health check for host node: " + hostAddress.getHostZkNode());
+
+    final Map<String, Runnable> adHocHealthCheckSchedule = scheduledMissingHostChecks.computeIfAbsent(
+        hostAddress.getServiceKey(), sk -> new ConcurrentHashMap<>());
+
+    adHocHealthCheckSchedule.computeIfAbsent(hostAddress.getHostUrl(), hostUrl -> {
+      Runnable healthCheckNow = () -> {
+        LOG.info("Starting ad-hoc health check for host: " + hostAddress.getHostZkNode());
+        healthCheckServiceHost(hostAddress.getServiceKey(), hostAddress.getHostUrl()).thenApply((b) -> {
+          // get rid of ourselves int the map, allowing others to schedule missing checks in the event that its not
+          // really missing.. guard here from any cross thread additions
+          synchronized (scheduledMissingHostChecks) {
+            adHocHealthCheckSchedule.remove(hostUrl);
+            if (adHocHealthCheckSchedule.isEmpty()) {
+              LOG.info("No more missing reports for service: " + hostAddress.getServiceKey());
+              scheduledMissingHostChecks.remove(hostAddress.getServiceKey());
+            }
+          }
+          return b;
+        });
+      };
+
+      executorService.submit(healthCheckNow);
+      return healthCheckNow;
+    });
+
+  }
+
+  /**
+   * Reports a host missing for a service key. This doesn't necessarily result in a change in the mesh, it only serves
+   * to schedule a host health check for the missing host in a faster manner than the cycling health check monitor. This
+   * is a way for hosts to actively report the state to the mesh without polling often.
+   *
+   * @param serviceName   the service name
+   * @param remoteHostUrl the remote host url
+   *
+   * @return true if host is reported missing
+   */
+  public CompletableFuture<Boolean> reportMissing(String serviceName, String remoteHostUrl) {
+    HostAddress hostAddress = new HostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
+    LOG.info("Zool Service Mesh recieved missing host report for hostAddress" + hostAddress);
+
+    if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(getLocalHostUrlAndPort(isProd(), -1))) {
+      // skipping self
+      debugIf(LOG, () -> "Skipping health check on self at " + remoteHostUrl);
+      return CompletableFuture.completedFuture(false);
+    }
+    // check if we think we know about this host
+    if (!meshNetwork.containsKey(serviceName)) {
+      debugIf(LOG, () -> "Skipping health check, we dont know this service key: " + serviceName);
+      // we don't know of this service don't health check
+      return CompletableFuture.completedFuture(false);
+    }
+
+    Set<String> hostUrlsOnThisService = meshNetwork.get(serviceName);
+
+    if (!hostUrlsOnThisService.contains(remoteHostUrl)) {
+      // we don't know about this host, don't health check
+      debugIf(LOG, () -> "Skipping health check, we dont know this service host: " + remoteHostUrl);
+      return CompletableFuture.completedFuture(false);
+    }
+
+    // at this point we know about the host within our own service map, we'll report it missing
+    Set<String> set = missingReports.computeIfAbsent(serviceName, sN -> new CopyOnWriteArraySet<>());
+    // if we aren't already on the missing report
+
+    if (set.add(remoteHostUrl)) {
+      // schedule a health check. We'll remove it from the mesh and update the discovery services if it fails.
+      scheduleHostHealthCheck(hostAddress);
+
+      // return true even if its a repeat report.
+      return CompletableFuture.completedFuture(true);
+    } else {
+      LOG.warn("Didn't schedule a health check for " + hostAddress);
+      return CompletableFuture.completedFuture(false);
+    }
+  }
+
+  private String serializedMeshNetwork() {
+    String serializedMap;
+    try {
+      serializedMap = new ObjectMapper().writeValueAsString(meshNetwork);
+    } catch (JsonProcessingException ex) {
+      LOG.error("Could not serialize mesh network map", ex);
+      serializedMap = "{}";
+    }
+
+    return serializedMap;
   }
 
   /**
@@ -404,46 +502,33 @@ public class ZoolServiceMesh {
    * @return a future of a boolean, with false if the host fails health check
    */
   private CompletableFuture<Boolean> healthCheckServiceHost(String serviceName, String remoteHostUrl) {
-    final int portIdx = remoteHostUrl.indexOf(':');
-    final String host = remoteHostUrl.substring(0, portIdx);
-    final int port = Integer.valueOf(remoteHostUrl.substring(portIdx + 1));
-
-    final String hostNode = ZConst.PathSeparator.ZK.join(zoolWriter.getZool().getServiceMapNode(),
-        serviceName,
-        remoteHostUrl);
-
-    if(zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(getLocalHostUrlAndPort(isProd(), -1))) {
+    HostAddress hostAddress = new HostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
+    if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(getLocalHostUrlAndPort(isProd(), -1))) {
       // skipping self
       debugIf(LOG, () -> "Skipping health check on self at " + remoteHostUrl);
       return CompletableFuture.completedFuture(true);
     }
 
-    String serializedMap;
-    try {
-      serializedMap = new ObjectMapper().writeValueAsString(meshNetwork);
-    } catch (JsonProcessingException ex) {
-      LOG.error("Could not serialize mesh network map", ex);
-      serializedMap = "{}";
-    }
-    RestRequest.Builder<Object, String> healthCheckBuilderRequestBuilder = new RestRequest.Builder<>(Object.class, String.class).setHost(host)
-        .setPort(port);
+    debugIf(LOG, () -> "Heath Check Service Host: " + serviceName + "/" + remoteHostUrl);
+    RestRequest.Builder<Object, String> healthCheckBuilderRequestBuilder = new RestRequest.Builder<>(Object.class,
+        String.class).setHost(hostAddress.getHost()).setPort(hostAddress.getPort());
 
-    if(serviceName.equals(zoolServiceKey)) {
+    if (serviceName.equals(zoolServiceKey)) {
       debugIf(LOG, () -> "Sending GET health check to a known discovery service instance at: " + remoteHostUrl);
       // this is another dynamic discovery service instance, we will pass no data downstream
       healthCheckBuilderRequestBuilder.setRequestMethod(RequestMethod.GET);
     } else {
       debugIf(LOG, () -> "Sending POST health check to a remote discovery host instance at: " + remoteHostUrl);
       // we are checking a host instance, we'll pass our current knowledge of the system to the host since we get
-      // ordered changes signaled from zookeeper already, we should have the latest data available since last signal received.
+      // ordered changes signaled from zookeeper already, we should have the latest data available since last signal
+      // received.
       healthCheckBuilderRequestBuilder.setHeaders(ImmutableMap.of("Content-Type", "application/json"))
           .setRequestMethod(RequestMethod.POST)
-          .setBody(serializedMap);
+          .setBody(serializedMeshNetwork());
     }
 
-    RestRequest<Object, String> restRequest = healthCheckBuilderRequestBuilder
-        .setRequestPath(discoveryHealthCheckEndpoint)
-        .build();
+    RestRequest<Object, String> restRequest = healthCheckBuilderRequestBuilder.setRequestPath(
+        discoveryHealthCheckEndpoint).build();
 
     return new StereoHttpTask<>(stereoHttpClient, serviceHealthCheckTimeout).execute(Object.class, restRequest)
         .thenApplyAsync(dynamicDiscoveryFeedback -> {
@@ -451,13 +536,21 @@ public class ZoolServiceMesh {
           boolean exists = true;
           if (dynamicDiscoveryFeedback.getStatus() != HttpStatus.SC_OK) {
             // suppress the host node!
-            if (!zoolWriter.removeNode(hostNode)) {
+            if (!zoolWriter.removeNode(hostAddress.getHostZkNode())) {
               // already removed
               LOG.warn("Already removed node: " + remoteHostUrl);
             } else {
               LOG.info("Removing remote node: " + remoteHostUrl);
             }
+
+            // run a network healthcheck now
+            networkHealthCheck();
+
             exists = false;
+          } else {
+            if (!zoolReader.nodeExists(hostAddress.getHostZkNode())) {
+              LOG.warn("Host Node is not in zool!" + hostAddress.getHostZkNode());
+            }
           }
 
           return exists;
@@ -618,8 +711,9 @@ public class ZoolServiceMesh {
       return new HashSet<>();
     }).add(hostUri);
 
-    final String hostNodePath = servicePath + '/' + hostUri;
-    infoT(LOG, "Announcing Service Host: " + hostNodePath);
+    final String hostNodePath = ZConst.PathSeparator.ZK.join(servicePath, hostUri);
+
+    infoIf(LOG, () -> "Announcing Service Host: " + hostNodePath);
     byte[] data = ZoolAnnouncement.serialize(announcement);
 
     if (data.length == 0 || !this.zoolWriter.createOrUpdateEphemeralNode(hostNodePath, data)) {
@@ -630,9 +724,16 @@ public class ZoolServiceMesh {
     }
 
     if (announcement != null) {
-      infoT(LOG, "Announced host node: " + hostNodePath);
+      infoIf(LOG, () -> "Announced host node: " + hostNodePath);
     }
 
     return announcement;
+  }
+
+  /**
+   * The state of the Mesh
+   */
+  public enum MeshState {
+    STOPPED, STARTING, RUNNING, STOPPING
   }
 }

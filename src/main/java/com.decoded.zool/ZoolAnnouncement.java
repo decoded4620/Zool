@@ -19,7 +19,9 @@ public class ZoolAnnouncement {
 
   /**
    * Deserialize a byte[] of JSON data to a {@link ZoolAnnouncement}
+   *
    * @param jsonBytes the bytes
+   *
    * @return a {@link ZoolAnnouncement}
    */
   public static ZoolAnnouncement deserialize(byte[] jsonBytes) {
@@ -36,7 +38,9 @@ public class ZoolAnnouncement {
 
   /**
    * Serialize a {@link ZoolAnnouncement} into a byte[] of json data
+   *
    * @param announcement the {@link ZoolAnnouncement}
+   *
    * @return a byte[]
    */
   public static byte[] serialize(ZoolAnnouncement announcement) {

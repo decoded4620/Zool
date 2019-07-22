@@ -138,22 +138,18 @@ public class ApplicationContainer {
   private final ExecutorService executorService;
 
   private final ApplicationLifecycle lifecycle;
-  private StereoHttpClient stereoHttpClient;
+  private final StereoHttpClient stereoHttpClient;
+  private final ZoolServiceMesh zoolServiceMesh;
 
   @Inject
-  public ApplicationContainer(
-                              ModuleConfiguration moduleConfiguration,
-                              ExecutorService executorService,
+  public ApplicationContainer(ExecutorService executorService,
                               StereoHttpClient httpClient,
                               ApplicationLifecycle lifecycle,
                               ZoolServiceMesh zoolService
-  ) {
-    LOG.info("Milli Application is starting...");
-    
+  ) {    
     // TODO setup Cfg instance using Hocon or other means.. 
 
     this.lifecycle = lifecycle;
-    this.moduleConfiguration = moduleConfiguration;
     this.executorService = executorService;
     this.stereoHttpClient = httpClient;
     this.zoolService = zoolService;
@@ -161,161 +157,66 @@ public class ApplicationContainer {
     startHttpClient();
   }
 
-  /**
-   * Get the conf configuration for the container (play application uses Hocon)
-   * @return the hocon configuration
-   */
   public Cfg getCfg() {
     return cfg;
   }
 
-  /**
-   * Start the Http Client.
-   */
   protected void startHttpClient() {
     if (stereoHttpClient.canStart()) {
-      LOG.info("Starting http client on thread: " + Thread.currentThread().getName());
       stereoHttpClient.start();
     }
   }
 
-  /**
-   * Container Configuration
-   */
   public static class Cfg {
-    /**
-     * This value controls the name for the process under zookeeper barrier node for this api. Each host will have
-     * its own e.g.
-     * barrierNode/services/myService_192.168.0.1
-     */
-    public String zookeeperServiceKey = "";
-
-    /**
-     * The zookeeper gateway service key for ping / announce / updating dd hosts.
-     */
-    public String zookeeperGatewayKey = "";
-
-    /**
-     * Production flag.
-     */
+    public String zookeeperServiceKey = "zkSvc";
+    public String zookeeperGatewayKey = "zkGateway";
     public boolean isProd = false;
   }
 }
 
 ```
-### Implement a Zool Client
-You can Implement your own Zool Client simply by extending the Zool Abstract
-
-```java
-package your.cool.discoveryservice.ZoolClient;
-
-import com.decoded.zool.Zool;
-import com.decoded.zool.ZoolDataFlow;
-
-import javax.inject.Inject;
-
-/**
- * Your Cool App ZoolClient
- */
-public class ZoolClient extends Zool {
-
-  @Inject
-  public ZoolClient(ZoolDataFlow zoolDataFlow) {
-    super(zoolDataFlow);
- 
-    setHost("localhost");
-    setPort(2181);
-    setTimeout(10000);
-    setServiceMapNode("/services");
-    setGatewayMapNode("/gateway");
-  }
-}
-```
-### Start Interacting with your Zookeeper Server
-```java
-Zool zoolClient;
-
-final String serviceMapNode = this.zoolClient.getServiceMapNode();
-final String gatewayNode = this.zoolClient.getGatewayMapNode();
-
-List<ZoolDataSink> dataHandlers = ImmutableList.of(
-    new ZoolDataSinkImpl(gatewayNode, this::onGatewayData, this::onGatewayNoData),
-    new ZoolDataSinkImpl(serviceMapNode, this::onZoolServicesData, this::onZoolServicesNoData)
-);
-
-dataHandlers.forEach(this.zoolClient::drain);
-
-this.zoolClient.connect();
-``` 
-
-### Handle Data (or Not)
-
-```java
-private void onGatewayData(String path, byte[] data) {
-  
-}
-
-private void onGatewayNoData(String path) {
-  throw new IllegalStateException("No gateway data was found");
-}
-
-private void onZoolServicesData(String path, byte[] data) {
-  List<String> children = zkClient.getChildren(path);
-   
-  System.out.println("path: " + path + ", data: " + data.length);
-  children.forEach(childName -> {
-    System.out.println(path + '/' + childName);
-  });
-}
-
-private void onZoolServicesNoData(String path) {
-}
-```
-## Zool Service Hub
-Zool Service Hub is a wrapper around Zool which allows a container application to become aware of the zookeeper network by announcing itself, and also getting a copy of the other hosts that have already announced. Each zookeeperHost connected to the same Zookeeper quarum gets a copy of the entire map.  
+## Zool Service Mesh
+Zool Service Mesh is a wrapper around Zool which allows a container application to become aware of the zookeeper network by announcing itself, and also getting a copy of the other hosts that have already announced. Each zookeeperHost connected to the same Zookeeper quarum gets a copy of the entire map.  
 
 The ServiceHub can be Injected with JavaX or Guice injection and requires a Zool instance, and an ExecutorService
 ```java
-ZoolAnnouncerHub
-bind(ZoolServiceHub.class).asEagerSingleton();
+bind(ZoolServiceMesh.class).asEagerSingleton();
 ```
 Then you can set it up like so:
 ```java
 @Inject
-public YourClass(ZoolServiceHub microServicesHub) {
+public YourClass(ZoolServiceMesh zoolServiceMesh) {
 ...
 }
 
 // zk port
-microServicesHub.setPort(2181);
+zoolServiceMesh.setPort(2181);
 
 // the service key that this zookeeperHost will live in
-microServicesHub.setServiceKey("userService");
-// how often to get updates from zk
-microServicesHub.setPollingInterval(2000);
+zoolServiceMesh.setServiceKey("userService");
 // if production true, false for dev
-microServicesHub.setProd(true);
+zoolServiceMesh.setProd(true);
 // this will start the hub, and announce our local url, as well as exchange for a copy of the other
 // services on the network.
-microServicesHub.start();
+zoolServiceMesh.start();
 ```
 
 You can later stop the hub:
 ```java
 // stops the service hub (unannouncing effectively your services zookeeperHost)
-microServicesHub.stop();
+zoolServiceMesh.stop();
 ```
 To get known services based on the gateway service map and service keys:
 
 ```java
-  List<String> knownServiceKeys = microServicesHub.getKnownServices();
-  List<String> hostsForUserService = getHostsForService("userService");
+  List<String> knownServiceKeys = zoolServiceMesh.getKnownServices();
+  List<String> hostsForUserService = zoolServiceMesh.getHostsForService("userService");
   
   // keys will be something similar to { "userService" }
   // hosts for userService would be something such as { "localhost:9001", "localhost:9002" }
 ```
 ### Service and Gateway Nodes
-The ZoolServiceHub will automatically create the gateway and service map nodes based on the
+The ZoolServiceMesh will automatically create the gateway and service map nodes based on the
 configuration. You can create several service maps and gateways in a zookeeper network to control
 the sharing of information for example.
 ```

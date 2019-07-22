@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 
 
 /**
@@ -30,6 +31,7 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Constructor
+   *
    * @param zoolReader a Zool reader.
    */
   public ZoolServiceMeshClient(ZoolReader zoolReader) {
@@ -38,6 +40,7 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Returns <code>true</code> if this client is announced on the network, and has knowledge of the other hosts.
+   *
    * @return a boolean.
    */
   public boolean isAnnounced() {
@@ -46,6 +49,7 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Returns <code>true</code> if this is a prod client.
+   *
    * @return boolean
    */
   public boolean isProd() {
@@ -54,7 +58,9 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Set the production (vs development) flag.
+   *
    * @param prod the prod flag, false for dev
+   *
    * @return the client.
    */
   public ZoolServiceMeshClient setProd(final boolean prod) {
@@ -62,15 +68,76 @@ public abstract class ZoolServiceMeshClient {
     return this;
   }
 
+
   /**
-   * update service mesh directly.
+   * Update the service mesh directly. If an announce method is passed in it is invoked in the event that the current
+   * host is not known in the updated map. (this re-announces)
    *
    * @param freshMesh the new data to update with.
+   * @param announcer the announcer function that returns a future of some type
+   * @param <X>       type returned by the announcer future
+   *
+   * @return a {@link CompletableFuture} of X
+   */
+  public <X> CompletableFuture<X> updateServiceMesh(Map<String, Set<String>> freshMesh,
+      BiFunction<String, Integer, CompletableFuture<X>> announcer) {
+    // default update
+    updateServiceMesh(freshMesh);
+
+    // check for reannounce
+    if (!isKnownByDiscoveryService()) {
+      // announce again
+      LOG.warn("Re-Announcing ourselves to zool!");
+      return announcer.apply(ZoolSystemUtil.getLocalHostUrl(isProd()), ZoolSystemUtil.getCurrentPort(-1));
+    }
+
+    return CompletableFuture.completedFuture(null);
+  }
+
+  /**
+   * Update the service mesh without option to reannounce
+   *
+   * @param freshMesh the new mesh
    */
   public void updateServiceMesh(Map<String, Set<String>> freshMesh) {
     LOG.info("update service mesh: " + freshMesh);
-    zoolServiceMesh.clear();
+    clearZoolServiceMesh();
     freshMesh.forEach(zoolServiceMesh::put);
+  }
+
+  /**
+   * Returns <code>true</code> if the current zool service mesh contains our host
+   *
+   * @return a boolean
+   */
+  protected boolean isKnownByDiscoveryService() {
+    boolean isKnown;
+    if (!zoolServiceMesh.containsKey(getZoolServiceKey())) {
+      isKnown = false;
+    } else {
+      final Set<String> hostsForMyService = zoolServiceMesh.get(getZoolServiceKey());
+      // return true if our host is known on the service mesh.
+      isKnown = hostsForMyService != null && hostsForMyService.contains(
+          ZoolSystemUtil.getLocalHostUrlAndPort(isProd(), -1));
+    }
+    LOG.info("Is My Host Known to Discovery Services? " + isKnown);
+    return isKnown;
+  }
+
+  /**
+   * Ignore a single host from a client perspective.
+   *
+   * @param serviceKey the service key
+   * @param hostUrl    the host url to ignore
+   */
+  public void ignoreHost(String serviceKey, String hostUrl) {
+    Set<String> set = zoolServiceMesh.get(serviceKey);
+
+    if (set != null && set.remove(hostUrl)) {
+      LOG.info("Ignoring host: " + hostUrl);
+    } else {
+      LOG.info("Host " + hostUrl + " is unknown or already ignored");
+    }
   }
 
   /**
@@ -94,7 +161,9 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Get (or create) a service fabric locally for the service key in our local mesh.
+   *
    * @param serviceKey the service key
+   *
    * @return a set of String values for hosts on the service.
    */
   public Set<String> getOrCreateServiceFabric(String serviceKey) {
@@ -103,6 +172,7 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Returns this clients service key.
+   *
    * @return a string.
    */
   public String getZoolServiceKey() {
@@ -111,7 +181,9 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Change the service key for this client. It will announce on this service key when running.
+   *
    * @param zoolServiceKey the service key to use.
+   *
    * @return this client.
    */
   public ZoolServiceMeshClient setZoolServiceKey(final String zoolServiceKey) {
@@ -131,7 +203,9 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Change the zool gateway key to point to a custom dynamic discovery service.
+   *
    * @param zoolGatewayKey the custom gateway key.
+   *
    * @return this client
    */
   public ZoolServiceMeshClient setZoolGatewayKey(final String zoolGatewayKey) {
@@ -179,7 +253,7 @@ public abstract class ZoolServiceMeshClient {
     LOG.info("Connecting to Zool Node " + gatewayPath);
     zoolReader.getZool().connect();
     zoolReader.readChildren(gatewayPath, (p, hosts) -> {
-      LOG.info("Gateway Hosts received for " + p + " , " + hosts.size());
+      LOG.debug("Gateway Hosts received for " + p + " , " + hosts.size());
       gatewayHosts = ImmutableList.copyOf(hosts);
       isAnnounced = true;
       serviceMeshFuture.complete(gatewayHosts);

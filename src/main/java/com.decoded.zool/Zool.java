@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
-import static com.decoded.zool.ZoolLoggingUtil.infoT;
+import static com.decoded.zool.ZoolLoggingUtil.infoIf;
 
 
 /**
@@ -126,7 +126,7 @@ public class Zool {
    */
   public synchronized void connect() {
     if (!connected.get()) {
-      infoT(LOG, "connecting to ZooKeeper on " + zookeeperHost + ":" + port + ", timeout: " + timeout);
+      infoIf(LOG, () -> "connecting to ZooKeeper on " + zookeeperHost + ":" + port + ", timeout: " + timeout);
       connected.set(true);
 
       // set the zookeeperHost port and timeout for the main zool data flow.
@@ -142,7 +142,7 @@ public class Zool {
    */
   public synchronized void disconnect() {
     if (connected.get()) {
-      infoT(LOG, "disconnecting from ZooKeeper on " + zookeeperHost + ":" + port);
+      infoIf(LOG, () -> "disconnecting from ZooKeeper on " + zookeeperHost + ":" + port);
       connected.set(false);
       zoolDataFlow.terminate();
     }
@@ -165,7 +165,7 @@ public class Zool {
    * @return a boolean, true if the path was either removed, or didn't exist to begin with.
    */
   public boolean removeNode(String path) {
-    infoT(LOG, "Deleting ZK Node " + zookeeperHost + ":" + port + " - " + path);
+    infoIf(LOG, () -> "Deleting ZK Node " + zookeeperHost + ":" + port + " - " + path);
     return zoolDataFlow.delete(path);
   }
 
@@ -210,6 +210,17 @@ public class Zool {
   }
 
   /**
+   * Get the data from a node directly.
+   *
+   * @param node a node.
+   *
+   * @return the byte[] data.
+   */
+  public byte[] getData(String node) {
+    return zoolDataFlow.get(node);
+  }
+
+  /**
    * Plugs a {@link ZoolDataSink} (e.g. stop draining data)
    *
    * @param dataSink the data sink to plug
@@ -222,22 +233,11 @@ public class Zool {
   /**
    * Add a data handler
    *
-   * @param dataSink the data sink to plug
+   * @param dataSink the data sink to drain into
    */
   public void drain(ZoolDataSink dataSink) {
     LOG.info("Drain to sink (node): " + dataSink.getZNode());
     zoolDataFlow.drain(dataSink);
-  }
-
-  /**
-   * Get the data from a node directly.
-   *
-   * @param node a node.
-   *
-   * @return the byte[] data.
-   */
-  public byte[] getData(String node) {
-    return zoolDataFlow.get(node);
   }
 
   /**

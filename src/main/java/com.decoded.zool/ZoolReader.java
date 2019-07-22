@@ -22,7 +22,6 @@ public class ZoolReader {
   private static final Logger LOG = LoggerFactory.getLogger(ZoolReader.class);
 
   private Zool zool;
-
   private Map<String, List<ZoolDataSink>> channels = new ConcurrentHashMap<>();
 
   @Inject

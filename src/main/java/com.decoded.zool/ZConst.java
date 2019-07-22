@@ -8,11 +8,10 @@ public class ZConst {
    * Convenience for path separation
    */
   public enum PathSeparator {
-    ZK("/"),
-    WIN("\\"),
-    NIX("/");
+    ZK("/"), WIN("\\"), NIX("/");
 
     private final String sep;
+
     PathSeparator(String sep) {
       this.sep = sep;
     }
