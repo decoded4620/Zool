@@ -146,7 +146,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void connect() {
-    infoIf(LOG, "Connecting...");
+    infoIf(LOG, () -> "Connecting...");
     executorService.submit(this);
   }
 
@@ -410,7 +410,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void run() {
-    infoIf(LOG, "String ZoolDataFlow: [" + zNode + "]");
+    infoIf(LOG, () -> "String ZoolDataFlow: [" + zNode + "]");
     try {
       synchronized (this) {
         dataFlowThread = Thread.currentThread();
