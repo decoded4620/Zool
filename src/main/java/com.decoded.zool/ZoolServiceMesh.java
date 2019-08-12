@@ -522,7 +522,7 @@ public class ZoolServiceMesh {
       // we are checking a host instance, we'll pass our current knowledge of the system to the host since we get
       // ordered changes signaled from zookeeper already, we should have the latest data available since last signal
       // received.
-      healthCheckBuilderRequestBuilder.setHeaders(ImmutableMap.of("Content-Type", "application/json"))
+      healthCheckBuilderRequestBuilder.addHeader("Content-Type", "application/json")
           .setRequestMethod(RequestMethod.POST)
           .setBody(serializedMeshNetwork());
     }
