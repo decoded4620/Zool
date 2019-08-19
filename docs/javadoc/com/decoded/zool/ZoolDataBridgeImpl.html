@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":42,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":42,"i2":10,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -156,7 +156,7 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#ZoolDataBridgeImpl-org.apache.zookeeper.ZooKeeper-java.lang.String-com.decoded.zool.ZoolWatcher-boolean-">ZoolDataBridgeImpl</a></span>(org.apache.zookeeper.ZooKeeper&nbsp;zk,
-                  java.lang.String&nbsp;zkNodePath,
+                  java.lang.String&nbsp;nodePath,
                   <a href="../../../com/decoded/zool/ZoolWatcher.html" title="interface in com.decoded.zool">ZoolWatcher</a>&nbsp;zoolWatcher,
                   boolean&nbsp;readChildren)</code>
 <div class="block">Constructor</div>
@@ -178,6 +178,12 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#burn--">burn</a></span>()</code>
+<div class="block">Destroys the bridge (disconnection)</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#getChildNodesAtPath-java.lang.String-boolean-">getChildNodesAtPath</a></span>(java.lang.String&nbsp;path,
                    boolean&nbsp;watch)</code>
@@ -186,17 +192,23 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 </div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#getNodePath--">getNodePath</a></span>()</code>
+<div class="block">Returns the main node path for this bridge.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#isDead--">isDead</a></span>()</code>
 <div class="block">Returns true if the databridge is dead and no longer connected to zookeeper.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#process-org.apache.zookeeper.WatchedEvent-">process</a></span>(org.apache.zookeeper.WatchedEvent&nbsp;event)</code>&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridgeImpl.html#processResult-int-java.lang.String-java.lang.Object-org.apache.zookeeper.data.Stat-">processResult</a></span>(int&nbsp;rc,
              java.lang.String&nbsp;path,
@@ -232,14 +244,14 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 <li class="blockList">
 <h4>ZoolDataBridgeImpl</h4>
 <pre>public&nbsp;ZoolDataBridgeImpl(org.apache.zookeeper.ZooKeeper&nbsp;zk,
-                          java.lang.String&nbsp;zkNodePath,
+                          java.lang.String&nbsp;nodePath,
                           <a href="../../../com/decoded/zool/ZoolWatcher.html" title="interface in com.decoded.zool">ZoolWatcher</a>&nbsp;zoolWatcher,
                           boolean&nbsp;readChildren)</pre>
 <div class="block">Constructor</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>zk</code> - <code>ZooKeeper</code> instance</dd>
-<dd><code>zkNodePath</code> - the path to a node to monitor on the server</dd>
+<dd><code>nodePath</code> - the path to a node to monitor on the server</dd>
 <dd><code>zoolWatcher</code> - the listener to handle events.</dd>
 <dd><code>readChildren</code> - to read or not to read children.</dd>
 </dl>
@@ -253,6 +265,23 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getNodePath--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNodePath</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getNodePath()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataBridge.html#getNodePath--">ZoolDataBridge</a></code></span></div>
+<div class="block">Returns the main node path for this bridge.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../com/decoded/zool/ZoolDataBridge.html#getNodePath--">getNodePath</a></code>&nbsp;in interface&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interface in com.decoded.zool">ZoolDataBridge</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a String</dd>
+</dl>
+</li>
+</ul>
 <a name="process-org.apache.zookeeper.WatchedEvent-">
 <!--   -->
 </a>
@@ -298,6 +327,21 @@ implements <a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interf
 <dd><code>watch</code> - boolean</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a list of Strings.</dd>
+</dl>
+</li>
+</ul>
+<a name="burn--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>burn</h4>
+<pre>public&nbsp;void&nbsp;burn()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataBridge.html#burn--">ZoolDataBridge</a></code></span></div>
+<div class="block">Destroys the bridge (disconnection)</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../com/decoded/zool/ZoolDataBridge.html#burn--">burn</a></code>&nbsp;in interface&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataBridge.html" title="interface in com.decoded.zool">ZoolDataBridge</a></code></dd>
 </dl>
 </li>
 </ul>

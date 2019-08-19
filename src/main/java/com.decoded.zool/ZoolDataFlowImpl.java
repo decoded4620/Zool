@@ -151,18 +151,16 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
   }
 
   private void checkZoo() {
-    LOG.info("Check zookeeper");
+    infoIf(LOG, () -> "Check zookeeper");
     if (zk == null) {
+      infoIf(LOG, () -> "Creating and connecting to zookeeper");
       state = DataFlowState.CONNECTING;
-      LOG.info("Creating new zookeeper");
       zk = createZookeeper();
       // if the above times out / throws an exception, connection will be reset.
-      state = zk == null ? DataFlowState.DISCONNECTED : DataFlowState.CONNECTED;
+      state = zk == null
+          ? DataFlowState.DISCONNECTED
+          : (zk.getState().isConnected() ? DataFlowState.CONNECTED : DataFlowState.DISCONNECTED);
     } else {
-      if (state == DataFlowState.DISCONNECTED) {
-        state = DataFlowState.CONNECTING;
-      }
-
       if (zk.getState().isConnected()) {
         state = DataFlowState.CONNECTED;
       } else {
@@ -170,7 +168,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
       }
     }
 
-    LOG.info("Check zookeeper complete: " + state);
+    infoIf(LOG, () -> "Zookeeper State: " + state);
   }
 
   @Override
@@ -281,6 +279,9 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
       if (stat != null) {
         zk.delete(path, stat.getVersion());
       }
+    } catch (KeeperException.ConnectionLossException ex) {
+      infoIf(LOG, () -> "Zookeeper disconnected " + ex.getMessage());
+      return false;
     } catch (KeeperException ex) {
       LOG.error("Keeper Exception", ex);
       return false;
@@ -298,15 +299,19 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
   public boolean update(final String path, final byte[] data) {
     checkZoo();
     try {
-      Stat stat = zk.exists(path, false);
+      final Stat stat = zk.exists(path, false);
 
       if (stat != null) {
-        stat = zk.setData(path, data, stat.getVersion());
-        LOG.info("updated " + path + ", to version: " + stat.getVersion() + ", with data: " + data.length + " bytes");
+        Stat setStat = zk.setData(path, data, stat.getVersion());
+        infoIf(LOG,
+            () -> "updated " + path + ", to version: " + setStat.getVersion() + ", with data: " + data.length + " " +
+                "bytes");
         return true;
       }
 
       LOG.error("Node " + path + " doesn't exist, create it first");
+    } catch (KeeperException.ConnectionLossException ex) {
+      infoIf(LOG, () -> "Zookeeper disconnected: " + ex.getMessage());
     } catch (KeeperException ex) {
       LOG.error("Keeper Exception: ", ex);
     } catch (InterruptedException ex) {
@@ -323,14 +328,33 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
     checkZoo();
     try {
       return zk.exists(path, false) != null;
+    } catch (KeeperException.ConnectionLossException ex) {
+      infoIf(LOG, () -> "Zookeeper disconnected: " + ex.getMessage());
+      return false;
     } catch (KeeperException ex) {
-      LOG.error("Keeper Exception", ex);
+      LOG.warn("Keeper Exception", ex);
     } catch (InterruptedException ex) {
       LOG.error("Interrupted", ex);
       state = DataFlowState.DISCONNECTED;
     }
-    LOG.info("Node " + path + " does not exist");
+    infoIf(LOG, () -> "Node " + path + " does not exist");
     return false;
+  }
+
+  /**
+   * Watch children of a newly created node
+   *
+   * @param path path to the parent node we're creating a child on.
+   */
+  private void watchChildren(String path) {
+    infoIf(LOG, () -> "Watching children of: " + path);
+    Optional.ofNullable(dataSinkMap.get(path)).ifPresent(dataSinks -> {
+      if (dataSinks.stream().anyMatch(ZoolDataSink::isReadChildren)) {
+        // add a watch for the node to be updated
+        infoIf(LOG, () -> "Watching Child Nodes at Path: " + path);
+        getChildNodesAtPath(path, true);
+      }
+    });
   }
 
   @Override
@@ -338,24 +362,21 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
     checkZoo();
     try {
       Stat stat = zk.exists(path, false);
-
       if (stat == null) {
-        zk.create(path, data, acls, mode);
+        try {
+          zk.create(path, data, acls, mode);
+          infoIf(LOG, () -> "Node " + path + " created");
+        } catch (KeeperException.NodeExistsException ex) {
+          infoIf(LOG, () -> "Node: " + path + " already exists: " + ex.getMessage());
+        }
 
-        Optional.ofNullable(dataSinkMap.get(path)).ifPresent(dataSinks -> {
-          if (dataSinks.stream().anyMatch(ZoolDataSink::isReadChildren)) {
-            // add a watch for the node to be updated
-            LOG.info("Watching Child Nodes at Path: " + path);
-            getChildNodesAtPath(path, true);
-          }
-        });
+        watchChildren(path);
         return true;
       }
-
-      LOG.error("Node " + path + " already exists, remove the old, or use update");
+    } catch (KeeperException.ConnectionLossException ex) {
+      infoIf(LOG, () -> "Zookeeper disconnected: " + ex.getMessage());
     } catch (KeeperException ex) {
-      LOG.error("Keeper exception creating node: ", ex);
-      // if can't create, try to remove our node.
+      LOG.warn("Keeper exception creating node: {}", ex.getMessage());
     } catch (InterruptedException ex) {
       LOG.error("Interrupted exception", ex);
       state = DataFlowState.DISCONNECTED;
@@ -371,6 +392,8 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
       if (zk.exists(path, false) != null) {
         return zk.getData(path, false, null);
       }
+    } catch (KeeperException.ConnectionLossException ex) {
+      infoIf(LOG, () -> "Zookeeper disconnected: " + ex.getMessage());
     } catch (KeeperException ex) {
       LOG.error("Keeper exception finding node: ", ex);
       state = DataFlowState.DISCONNECTED;
@@ -384,7 +407,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
   @Override
   public List<String> getChildNodesAtPath(final String path, final boolean watch) {
     checkZoo();
-    LOG.info("get child nodes at path: " + path + ", watch " + watch);
+    infoIf(LOG, () -> "get child nodes at path: " + path + ", watch " + watch);
     return ZoolSystemUtil.getChildNodesAtPath(zk, path, watch);
   }
 
@@ -398,7 +421,9 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
     Iterator<ZoolDataBridge> it = zoolDataBridgeMap.values().iterator();
     boolean allDead = true;
     while (it.hasNext()) {
-      if (!it.next().isDead()) {
+      ZoolDataBridge bridge = it.next();
+      if (!bridge.isDead()) {
+        infoIf(LOG, () -> "Not dead yet");
         allDead = false;
 
         break;
@@ -410,7 +435,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void run() {
-    infoIf(LOG, () -> "String ZoolDataFlow: [" + zNode + "]");
+    infoIf(LOG, () -> "Starting ZoolDataFlow: [" + zNode + "]");
     try {
       synchronized (this) {
         dataFlowThread = Thread.currentThread();
@@ -437,10 +462,23 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void terminate() {
+    LOG.warn(
+        "Terminating ZoolDataFlow: [" + zNode + "] and " + zoolDataBridgeMap.size() + " watchers and " + dataSinkMap.size() + " sinks");
+    zoolDataBridgeMap.values().iterator().forEachRemaining(bridge -> {
+      unwatch(bridge.getNodePath());
+      bridge.burn();
+    });
+
     if (dataFlowThread != null) {
-      debugIf(LOG, () -> "Terminating ZoolDataFlow: [" + zNode + "]");
       dataFlowThread.interrupt();
     }
+
+    try {
+      zk.close();
+    } catch (InterruptedException ex) {
+      LOG.error("Could not close zk connection");
+    }
+    connected = false;
   }
 
   @Override
@@ -453,7 +491,9 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void onNoChildren(final String zNode) {
-    LOG.info("No Children Received for " + zNode + (dataSinkMap.containsKey(zNode) ? "(Watched!)" : "(Not Watching!)"));
+    infoIf(LOG, () -> "No Children Received for " + zNode + (dataSinkMap.containsKey(zNode)
+        ? "(Watched!)"
+        : "(Not Watching!)"));
     Optional.ofNullable(dataSinkMap.get(zNode))
         .ifPresent(handlers -> handlers.stream()
             .filter(ZoolDataSink::isReadChildren)
@@ -462,7 +502,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void onChildren(final String zNode, final List<String> childNodes) {
-    LOG.info("Children Received for " + zNode + " ==> " + childNodes.size() + (dataSinkMap.containsKey(zNode)
+    infoIf(LOG, () -> "Children Received for " + zNode + " ==> " + childNodes.size() + (dataSinkMap.containsKey(zNode)
         ? "(Watched!)"
         : "(Not Watching!)"));
     // remove each of the data sinks that should disconnect when no data exists.

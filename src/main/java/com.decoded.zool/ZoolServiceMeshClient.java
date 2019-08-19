@@ -25,7 +25,9 @@ public abstract class ZoolServiceMeshClient {
   private AtomicLong gatewayHostIdx = new AtomicLong(0);
   private String zoolServiceKey = "";
   private String zoolGatewayKey = "";
-  private boolean isAnnounced = false;
+  private boolean announced = false;
+  private boolean gatewayConnected = false;
+
   // map of host indexes (for predictable load balancing)
   private boolean isProd;
 
@@ -44,7 +46,15 @@ public abstract class ZoolServiceMeshClient {
    * @return a boolean.
    */
   public boolean isAnnounced() {
-    return isAnnounced;
+    return announced;
+  }
+
+  /**
+   * returns true if the gateway is connected (e.g. we know about gateway hosts for announcement)
+   * @return a boolean
+   */
+  public boolean isGatewayConnected() {
+    return gatewayConnected;
   }
 
   /**
@@ -68,6 +78,15 @@ public abstract class ZoolServiceMeshClient {
     return this;
   }
 
+  /**
+   * Set the announcement flag.
+   * @param announced
+   * @return
+   */
+  protected ZoolServiceMeshClient setAnnounced(boolean announced) {
+    this.announced = announced;
+    return this;
+  }
 
   /**
    * Update the service mesh directly. If an announce method is passed in it is invoked in the event that the current
@@ -84,8 +103,8 @@ public abstract class ZoolServiceMeshClient {
     // default update
     updateServiceMesh(freshMesh);
 
-    // check for reannounce
-    if (!isKnownByDiscoveryService()) {
+    // check for discoverability
+    if (!isMyHostDiscoverable()) {
       // announce again
       LOG.warn("Re-Announcing ourselves to zool!");
       return announcer.apply(ZoolSystemUtil.getLocalHostUrl(isProd()), ZoolSystemUtil.getCurrentPort(-1));
@@ -110,18 +129,20 @@ public abstract class ZoolServiceMeshClient {
    *
    * @return a boolean
    */
-  protected boolean isKnownByDiscoveryService() {
-    boolean isKnown;
+  protected boolean isMyHostDiscoverable() {
+    boolean isDiscoverable;
     if (!zoolServiceMesh.containsKey(getZoolServiceKey())) {
-      isKnown = false;
+      LOG.info("Service key: " + getZoolServiceKey() + " is not known to central discovery service yet...");
+      isDiscoverable = false;
     } else {
       final Set<String> hostsForMyService = zoolServiceMesh.get(getZoolServiceKey());
       // return true if our host is known on the service mesh.
-      isKnown = hostsForMyService != null && hostsForMyService.contains(
+      isDiscoverable = hostsForMyService != null && hostsForMyService.contains(
           ZoolSystemUtil.getLocalHostUrlAndPort(isProd(), -1));
+
+      LOG.info("My service exists at: " + getZoolServiceKey() + ", is my host visible to Discovery Services? " + isDiscoverable);
     }
-    LOG.info("Is My Host Known to Discovery Services? " + isKnown);
-    return isKnown;
+    return isDiscoverable;
   }
 
   /**
@@ -232,47 +253,61 @@ public abstract class ZoolServiceMeshClient {
   }
 
   /**
+   * Connect to zookeeper server
+   * @return
+   */
+  public ZoolServiceMeshClient connect() {
+    zoolReader.getZool().connect();
+    return this;
+  }
+  /**
    * Initializes the client gateway knowledge. This will connect directly to zookeeper and get the gateway hosts.
    *
    * @return the chosen gateway host.
    */
-  public CompletableFuture<List<String>> start() {
+  public CompletableFuture<List<String>> findDiscoveryGateway() {
+
+
     if (zoolServiceKey == null || zoolServiceKey.isEmpty() || zoolGatewayKey == null || zoolGatewayKey.isEmpty()) {
       throw new IllegalStateException(
           "You must specify a service key and gateway key for the zool service mesh client");
     }
 
-    LOG.info("Service Gateway Client starting, gateway key is : " + zoolGatewayKey);
-
-    CompletableFuture<List<String>> serviceMeshFuture = new CompletableFuture<>();
+    gatewayConnected = false;
     // join the path with zk separator
     final String gatewayPath = ZConst.PathSeparator.ZK.join(zoolReader.getZool().getServiceMapNode(), zoolGatewayKey);
+    LOG.info("Service Gateway Client starting, gateway key is : " + zoolGatewayKey + " path/ " + gatewayPath);
     // we will load the gateway service path once, and then talk to one of the hosts which handle gateway
     // discovery to get updates. This avoids overloading zookeeper nodes.
-
     LOG.info("Connecting to Zool Node " + gatewayPath);
-    zoolReader.getZool().connect();
-    zoolReader.readChildren(gatewayPath, (p, hosts) -> {
-      LOG.debug("Gateway Hosts received for " + p + " , " + hosts.size());
-      gatewayHosts = ImmutableList.copyOf(hosts);
-      isAnnounced = true;
-      serviceMeshFuture.complete(gatewayHosts);
-    }, p -> {
-      LOG.warn("No Gateway Hosts announced at gateway: " + p);
-      serviceMeshFuture.complete(gatewayHosts);
-    }).oneOff();
 
-    serviceMeshFuture.thenRun(zoolReader.getZool()::disconnect);
+    CompletableFuture<List<String>> serviceMeshFuture = new CompletableFuture<>();
+
+    zoolReader.readChildren(gatewayPath, (p, hosts) -> {
+      gatewayHosts = ImmutableList.copyOf(hosts);
+      // wait for at least one host.
+      if(!gatewayHosts.isEmpty()) {
+        LOG.info("Gateway Hosts received for " + p + " , " + hosts.size());
+        gatewayConnected = true;
+        serviceMeshFuture.complete(gatewayHosts);
+      } else {
+        LOG.warn("No Gateway Hosts found announced on zookeeper node: " + p);
+        // the future should wait
+      }
+    }, p -> {
+      LOG.warn("No Gateway Service announced on zookeeper: " + p);
+      // the future should wait
+    });
 
     return serviceMeshFuture;
   }
 
   /**
-   * Stop the client connection completely, resetting the announcement flag.
+   * Disconnect from zookeeper server
    */
-  public void stop() {
+  public void disconnect() {
+    LOG.warn("Stopping Zool Client!");
     zoolReader.getZool().disconnect();
-    isAnnounced = false;
   }
 
   /**

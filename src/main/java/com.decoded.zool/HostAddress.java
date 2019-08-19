@@ -83,7 +83,7 @@ public class HostAddress {
   /**
    * The Host Zookeeper Node Path
    *
-   * @return
+   * @return a String, the host zookeeper node
    */
   public String getHostZkNode() {
     return hostZkNode;

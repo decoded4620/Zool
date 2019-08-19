@@ -98,10 +98,12 @@ public class ZoolSystemUtil {
           LOG.warn("no node exists at " + path);
         }
 
-      } catch (InterruptedException ex) {
-        LOG.error("Interrupted", ex);
+      } catch (KeeperException.ConnectionLossException ex) {
+        LOG.warn("Zookeeper Disconnected: {}", ex.getMessage());
       } catch (KeeperException ex) {
         LOG.error("Keeper Exception", ex);
+      } catch (InterruptedException ex) {
+        LOG.error("Interrupted", ex);
       }
     }
     return Collections.emptyList();

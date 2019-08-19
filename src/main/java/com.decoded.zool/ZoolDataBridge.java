@@ -16,4 +16,15 @@ public interface ZoolDataBridge extends Watcher,
    * @return a boolean.
    */
   boolean isDead();
+
+  /**
+   * Returns the main node path for this bridge.
+   * @return a String
+   */
+  String getNodePath();
+
+  /**
+   * Destroys the bridge (disconnection)
+   */
+  void burn();
 }

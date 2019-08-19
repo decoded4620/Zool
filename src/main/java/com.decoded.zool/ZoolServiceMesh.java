@@ -261,11 +261,11 @@ public class ZoolServiceMesh {
 
     // the service map node
     zoolReader.readChannelAndChildren(zoolReader.getZool().getServiceMapNode(), (servicePath, bytes) -> {
-      LOG.info("Service Map is available, waiting on children...");
+      LOG.info("Service Map at " + servicePath + " is available, waiting on children...");
     }, serviceMapPath -> {
-      LOG.warn("Service Map Node is not available, creating: " + serviceMapPath);
+      LOG.warn("Service Map at " + serviceMapPath + " is not available, creating it");
       if (!zoolWriter.createPersistentNode(serviceMapPath)) {
-        LOG.error("Node not created: " + serviceMapPath);
+        LOG.error("Error creating: " + serviceMapPath);
       }
     }, (serviceMapPath, serviceNames) -> {
       LOG.info("Service: " + serviceMapPath + " received " + serviceNames.size() + " services");
@@ -371,7 +371,6 @@ public class ZoolServiceMesh {
         isAnnounced = true;
 
         if (stereoHttpClient.canStart()) {
-          // start stereo
           stereoHttpClient.start();
         }
 
@@ -494,6 +493,21 @@ public class ZoolServiceMesh {
   }
 
   /**
+   * Remove a host address from our service mesh
+   * @param hostAddress
+   */
+  private void removeHostAddress(HostAddress hostAddress) {
+    LOG.info("Remove Host Address: " + hostAddress);
+    // suppress the host node!
+    if (!zoolWriter.removeNode(hostAddress.getHostZkNode())) {
+      // already removed
+      LOG.warn("Not not removed: " + hostAddress.getHostUrl());
+    }
+
+    // run a network health check now
+    networkHealthCheck();
+  }
+  /**
    * Health checks a host, and cleans it if necessary
    *
    * @param serviceName   the service name
@@ -535,17 +549,7 @@ public class ZoolServiceMesh {
           debugIf(LOG, () -> "Discovery Health Check Response: " + dynamicDiscoveryFeedback.getStatus());
           boolean exists = true;
           if (dynamicDiscoveryFeedback.getStatus() != HttpStatus.SC_OK) {
-            // suppress the host node!
-            if (!zoolWriter.removeNode(hostAddress.getHostZkNode())) {
-              // already removed
-              LOG.warn("Already removed node: " + remoteHostUrl);
-            } else {
-              LOG.info("Removing remote node: " + remoteHostUrl);
-            }
-
-            // run a network healthcheck now
-            networkHealthCheck();
-
+            removeHostAddress(hostAddress);
             exists = false;
           } else {
             if (!zoolReader.nodeExists(hostAddress.getHostZkNode())) {

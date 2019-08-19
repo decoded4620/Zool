@@ -124,7 +124,7 @@ public class Zool {
   /**
    * Connect to zookeeper, using the zookeeper Host and port.
    */
-  public synchronized void connect() {
+  public void connect() {
     if (!connected.get()) {
       infoIf(LOG, () -> "connecting to ZooKeeper on " + zookeeperHost + ":" + port + ", timeout: " + timeout);
       connected.set(true);
@@ -134,17 +134,21 @@ public class Zool {
 
       // run the zoolDataFlow in its own thread.
       zoolDataFlow.connect();
+    } else {
+      LOG.info("Zool is Already Connected!");
     }
   }
 
   /**
    * Terminate our zookeeper connection
    */
-  public synchronized void disconnect() {
+  public void disconnect() {
     if (connected.get()) {
       infoIf(LOG, () -> "disconnecting from ZooKeeper on " + zookeeperHost + ":" + port);
-      connected.set(false);
       zoolDataFlow.terminate();
+      connected.set(false);
+    } else {
+      LOG.error("Zool is not connected!");
     }
   }
 
@@ -221,12 +225,12 @@ public class Zool {
   }
 
   /**
-   * Plugs a {@link ZoolDataSink} (e.g. stop draining data)
+   * Plugs a {@link ZoolDataSink} (e.g. disconnect draining data)
    *
    * @param dataSink the data sink to plug
    */
   public void drainStop(ZoolDataSink dataSink) {
-    LOG.info("Drain stop on sink (node): " + dataSink.getZNode());
+    LOG.info("Drain disconnect on sink (node): " + dataSink.getZNode());
     zoolDataFlow.drainStop(dataSink);
   }
 

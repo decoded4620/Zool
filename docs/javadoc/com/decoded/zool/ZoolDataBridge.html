@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6};
+var methods = {"i0":6,"i1":6,"i2":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -152,6 +152,18 @@ extends org.apache.zookeeper.Watcher, org.apache.zookeeper.AsyncCallback.StatCal
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridge.html#burn--">burn</a></span>()</code>
+<div class="block">Destroys the bridge (disconnection)</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridge.html#getNodePath--">getNodePath</a></span>()</code>
+<div class="block">Returns the main node path for this bridge.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataBridge.html#isDead--">isDead</a></span>()</code>
 <div class="block">Returns true if the databridge is dead and no longer connected to zookeeper.</div>
@@ -189,7 +201,7 @@ extends org.apache.zookeeper.Watcher, org.apache.zookeeper.AsyncCallback.StatCal
 <a name="isDead--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>isDead</h4>
 <pre>boolean&nbsp;isDead()</pre>
@@ -198,6 +210,30 @@ extends org.apache.zookeeper.Watcher, org.apache.zookeeper.AsyncCallback.StatCal
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a boolean.</dd>
 </dl>
+</li>
+</ul>
+<a name="getNodePath--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getNodePath</h4>
+<pre>java.lang.String&nbsp;getNodePath()</pre>
+<div class="block">Returns the main node path for this bridge.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a String</dd>
+</dl>
+</li>
+</ul>
+<a name="burn--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>burn</h4>
+<pre>void&nbsp;burn()</pre>
+<div class="block">Destroys the bridge (disconnection)</div>
 </li>
 </ul>
 </li>

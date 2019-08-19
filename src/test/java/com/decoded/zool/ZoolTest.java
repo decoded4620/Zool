@@ -32,24 +32,6 @@ public class ZoolTest implements WithAssertions {
   }
 
   @Test
-  public void testNoConnection() {
-    MockData data = new MockData();
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
-
-    ZoolDataWatcher zdw = spy(new ZoolDataWatcher());
-
-    Mocks mocks = new Mocks(spy(new ZoolDataSinkImpl("test sink", data.zNode, zdw::onData, zdw::onNoData)),
-        executorService, spy(new ZoolDataFlowImpl(executorService)));
-
-    mocks.zool.drain(mocks.dataSink);
-
-    assertThat(mocks.dataFlow.getState()).isEqualTo(DataFlowState.DISCONNECTED);
-
-    final byte[] byteData = mocks.zool.getData(data.zNode);
-    assertThat(byteData).isEqualTo(data.noBytes);
-  }
-
-  @Test
   public void testNoData() {
     MockData data = new MockData();
     Mocks mocks = new Mocks(data);
