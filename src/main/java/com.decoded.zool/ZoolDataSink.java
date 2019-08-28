@@ -88,44 +88,22 @@ public interface ZoolDataSink {
    */
   void onDataNotExists(String zNode);
 
+  /**
+   * Completion of loading cycle
+   * @param zNode the node
+   */
+  void onLoadComplete(String zNode);
 
   /**
-   * If true, this data sink should be disconnected after it receives and processes data.
+   * If true, this data sink should be disconnected after it receives and processes data and children
    *
    * @return a boolean
    */
-  boolean willDisconnectOnData();
+  boolean isDisconnectingAfterLoadComplete();
 
   /**
-   * If true, this data sink should be discarded if it recieves no data.
-   *
-   * @return a boolean
-   */
-  boolean willDisconnectOnNoData();
-
-  /**
-   * Calling this on a data sink (before fetching data) will cause the data sink to disconnect when its onDataNotExists
-   * handler is called.
-   * <p>
-   * This is handy for cleaning up as early as possible
-   *
+   * Disconnect after loading data and children.
    * @return this data sink.
    */
-  ZoolDataSink disconnectWhenNoDataExists();
-
-  /**
-   * Calling this on data sink (before fetching data) will cause the data sink to disconnect when its onData handler is
-   * called.
-   *
-   * @return this data sink.
-   */
-  ZoolDataSink disconnectWhenDataIsReceived();
-
-  /**
-   * Calling this on data sink has the same behavior as calling both disconnectWhenDataIsReceived and
-   * disconnectWhenNoDataExists together.
-   *
-   * @return this data sink
-   */
-  ZoolDataSink oneOff();
+  ZoolDataSink disconnectAfterLoadComplete();
 }

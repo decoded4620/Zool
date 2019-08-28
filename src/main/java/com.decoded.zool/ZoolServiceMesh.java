@@ -1,5 +1,6 @@
 package com.decoded.zool;
 
+import com.decoded.javautil.Pair;
 import com.decoded.stereohttp.RequestMethod;
 import com.decoded.stereohttp.RestRequest;
 import com.decoded.stereohttp.StereoHttpClient;
@@ -47,8 +48,8 @@ public class ZoolServiceMesh {
   private final StereoHttpClient stereoHttpClient;
   private final ExecutorService executorService;
   private final ScheduledExecutorService scheduledExecutorService;
-  private final Map<String, Set<String>> meshNetwork = new ConcurrentHashMap<>();
-  private final Map<String, Set<String>> missingReports = new ConcurrentHashMap<>();
+  private final Map<String, Map<String, ZoolAnnouncement>> meshNetwork = new ConcurrentHashMap<>();
+  private final Map<String, Map<String, ZoolAnnouncement>> missingReports = new ConcurrentHashMap<>();
   private final Map<String, Map<String, Runnable>> scheduledMissingHostChecks = new ConcurrentHashMap<>();
   private int serviceHealthCheckTimeout = 500;
   private String discoveryHealthCheckEndpoint = "/discoveryHealthCheck";
@@ -63,6 +64,7 @@ public class ZoolServiceMesh {
   private ZoolReader zoolReader;
   private boolean announcementChangeScheduled = false;
   private MeshState meshState = MeshState.STOPPED;
+  private boolean secure = false;
 
   @Inject
   public ZoolServiceMesh(ZoolReader zoolReader,
@@ -98,14 +100,30 @@ public class ZoolServiceMesh {
    *
    * @return the chosen host or empty
    */
-  public static String getNextHostFromHostList(AtomicLong hostIdxHolder, List<String> hosts) {
+  public static Pair<String, ZoolAnnouncement> getNextHostFromHostAnnouncementList(AtomicLong hostIdxHolder, Map<String, ZoolAnnouncement> hosts) {
+    if (hosts.isEmpty()) {
+      LOG.warn("no hosts were supplied to getNextHostsFromHostList!");
+      return new Pair<>("", new ZoolAnnouncement());
+    }
+
+    // corrected idx will always be within range
+    String hostKey = new ArrayList<>(hosts.keySet()).get((int) (hostIdxHolder.getAndIncrement() % hosts.size()));
+
+    return new Pair<>(hostKey, hosts.get(hostKey));
+  }
+
+  public static String getNextHostFromHostList(AtomicLong hostIdxHolder, Set<String> hosts) {
     if (hosts.isEmpty()) {
       LOG.warn("no hosts were supplied to getNextHostsFromHostList!");
       return "";
     }
 
     // corrected idx will always be within range
-    return hosts.get((int) (hostIdxHolder.getAndIncrement() % hosts.size()));
+    return new ArrayList<>(hosts).get((int) (hostIdxHolder.getAndIncrement() % hosts.size()));
+  }
+
+  public boolean isSecure() {
+    return secure;
   }
 
   /**
@@ -246,9 +264,12 @@ public class ZoolServiceMesh {
   /**
    * Start the service mesh.
    *
+   * @param isSecure true if we are running in secure mode
+   *
    * @return a completable future.
    */
-  public CompletableFuture<Map<String, Set<String>>> start() {
+  public CompletableFuture<Map<String, Map<String, ZoolAnnouncement>>> start(final boolean isSecure) {
+    this.secure = isSecure;
     if (zoolServiceKey == null || zoolServiceKey.isEmpty()) {
       throw new IllegalStateException(
           "You must supply a zool service key for the service mesh. Here are some examples of good service mesh " +
@@ -257,29 +278,41 @@ public class ZoolServiceMesh {
 
     meshState = MeshState.STARTING;
 
-    CompletableFuture<Map<String, Set<String>>> serviceMeshFuture = new CompletableFuture<>();
+    CompletableFuture<Map<String, Map<String, ZoolAnnouncement>>> serviceMeshFuture = new CompletableFuture<>();
 
     // the service map node
     zoolReader.readChannelAndChildren(zoolReader.getZool().getServiceMapNode(), (servicePath, bytes) -> {
-      LOG.info("Service Map at " + servicePath + " is available, waiting on children...");
+      infoIf(LOG, () -> "Service Map at " + servicePath + " is available, waiting on children...");
     }, serviceMapPath -> {
       LOG.warn("Service Map at " + serviceMapPath + " is not available, creating it");
       if (!zoolWriter.createPersistentNode(serviceMapPath)) {
         LOG.error("Error creating: " + serviceMapPath);
       }
     }, (serviceMapPath, serviceNames) -> {
-      LOG.info("Service: " + serviceMapPath + " received " + serviceNames.size() + " services");
+      infoIf(LOG, () -> "Service Map at: " + serviceMapPath + " loaded " + serviceNames.size() + " existing zool services");
       // if we were stopped prior to this point, bail
       // attempt to announce if children are found, but we're not in the list.
-      this.announceSelfAsGateway(zoolServiceKey);
+      // NOTE: We don't want to direct HTTPS traffic to non-https servers.
+      this.announceSelfAsGateway(zoolServiceKey, isSecure);
 
       // update again
-      updateHostsForAllServicesFromZool(serviceNames).thenAccept(voidT -> serviceMeshFuture.complete(getMeshNetwork()));
+      updateHostsForAllServicesFromZool(serviceNames).thenAccept(voidT -> {
+        if (stereoHttpClient.canStart()) {
+          stereoHttpClient.start();
+        }
+
+        // initialize the network health check
+        scheduleNetworkHealthCheck();
+
+        serviceMeshFuture.complete(getMeshNetwork());
+      });
+
+
       meshState = MeshState.RUNNING;
 
     }, serviceMapPath -> {
       // if no children are found, we'll announce ourselves now
-      this.announceSelfAsGateway(zoolServiceKey);
+      this.announceSelfAsGateway(zoolServiceKey, isSecure);
       meshState = MeshState.RUNNING;
       serviceMeshFuture.complete(getMeshNetwork());
     });
@@ -306,7 +339,7 @@ public class ZoolServiceMesh {
    *
    * @return the service mesh map
    */
-  public Map<String, Set<String>> getMeshNetwork() {
+  public Map<String, Map<String, ZoolAnnouncement>> getMeshNetwork() {
     return ImmutableMap.copyOf(meshNetwork);
   }
 
@@ -321,10 +354,9 @@ public class ZoolServiceMesh {
     infoIf(LOG, () -> "Updating hosts from Zool for " + serviceKeys.size() + " services");
     if (!serviceKeys.isEmpty()) {
       return CompletableFuture.supplyAsync(() -> {
-
-        Set<String> existingServices = meshNetwork.keySet();
-        // remove any keys that are no longer known to zookeeper
-        existingServices.stream().filter(key -> !serviceKeys.contains(key)).forEach(meshNetwork::remove);
+//        Set<String> existingServices = meshNetwork.keySet();
+        // remove any keys that are no longer known to zookeeper (except our own service key!)
+//        existingServices.stream().filter(key -> !key.equals(zoolServiceKey)).filter(key -> !serviceKeys.contains(key)).forEach(meshNetwork::remove);
 
         serviceKeys.forEach(serviceKey -> {
           // inner jobs?
@@ -332,21 +364,45 @@ public class ZoolServiceMesh {
               serviceKey);
 
           if (!zoolReader.isReading(servicePath)) {
-            zoolReader.readChildren(servicePath, (p, c) -> {
+            zoolReader.readChildren(servicePath, (sp, hostList) -> {
+              debugIf(LOG, () -> "-------------------------------------------------------------");
+              infoIf(LOG, () -> "Loading " + hostList.size() + " hosts from service path: " + sp);
               // only care about the service hosts loading here here.
-              meshNetwork.remove(serviceKey);
-              meshNetwork.computeIfAbsent(serviceKey, x -> new HashSet<>()).addAll(c);
-
-              infoIf(LOG, () -> "Updated mesh for " + serviceKey + " to " + c.size() + " total hosts");
-            }, p -> LOG.warn("No hosts found on path " + p));
+//              meshNetwork.remove(serviceKey);
+              hostList.forEach(hostKey -> {
+                debugIf(LOG, () -> "Reading host data: " + hostKey);
+                // read the zookeeper data
+                zoolReader.readChannel(ZConst.PathSeparator.ZK.join(servicePath, hostKey),
+                    (channelPath, bytes) -> {
+                      infoIf(LOG, () -> "Service " + channelPath + " was found with " + bytes.length + " bytes");
+                      ZoolAnnouncement announcement = ZoolAnnouncement.deserialize(bytes);
+                      if(announcement.token.length > 0) {
+                        Map<String, ZoolAnnouncement> announcements = meshNetwork.computeIfAbsent(serviceKey, x -> new HashMap<>());
+                        long existingAnnouncementsForKey = announcements.keySet().stream().filter(key -> key.equals(serviceKey)).count();
+                        if (existingAnnouncementsForKey == 0) {
+                          announcements.put(hostKey, announcement);
+                        } else {
+                          infoIf(LOG, () -> "Announcement: " + hostKey + " was already made");
+                        }
+                      } else {
+                        LOG.error("--------------------------\nZilli announcement was invalid, no token was included\n--------------------------------");
+                      }
+                    },
+                    keyNoData -> {
+                      infoIf(LOG, () -> "Key " + keyNoData + " was read, but no data was inside!");
+                    });//.disconnectAfterLoadComplete();
+              });
+              infoIf(LOG, () -> "Updated mesh for " + serviceKey + " to " + hostList.size() + " total hosts");
+            }, p -> LOG.warn("No hosts found on service path " + p));
           } else {
-            LOG.warn("Not reading children of " + servicePath + ", its already being read");
+            LOG.warn("service path " + servicePath + ", is already being read");
           }
         });
 
-        int totalHosts = meshNetwork.values().stream().mapToInt(Set::size).sum();
+        int totalHosts = meshNetwork.values().stream().mapToInt(Map::size).sum();
         infoIf(LOG,
             () -> "Loaded Total Services: " + meshNetwork.size() + " services and " + totalHosts + " total hosts");
+        debugIf(LOG, () -> "-------------------------------------------------------------");
         return null;
       }, executorService);
       // update the hosts for each service in a single thread
@@ -359,23 +415,17 @@ public class ZoolServiceMesh {
    * Announces this host as a gateway host to Zookeeper
    *
    * @param zoolGatewayKey gateway service node key
+   * @param isSecure       true if we are announcing as a secure host.
    */
-  protected void announceSelfAsGateway(final String zoolGatewayKey) {
+  protected void announceSelfAsGateway(final String zoolGatewayKey, final boolean isSecure) {
     if (!this.isAnnounced) {
       infoIf(LOG, () -> "Self Announcing Service mesh host on service key: " + zoolGatewayKey);
-      zoolGatewayAnnouncement = announceServiceHost(zoolGatewayKey, getLocalHostUrlAndPort(isProd, port));
+      zoolGatewayAnnouncement = announceServiceHost(zoolGatewayKey, getLocalHostUrlAndPort(isProd, isSecure), isSecure);
 
       if (zoolGatewayAnnouncement == null || zoolGatewayAnnouncement.token.length == 0) {
         LOG.error("Announcement failure", new ZoolServiceException("Announcement was a failure"));
       } else {
         isAnnounced = true;
-
-        if (stereoHttpClient.canStart()) {
-          stereoHttpClient.start();
-        }
-
-        // initialize the network health check
-        scheduleNetworkHealthCheck();
       }
     } else {
       infoIf(LOG, () -> "this is not the first update...");
@@ -410,18 +460,31 @@ public class ZoolServiceMesh {
     adHocHealthCheckSchedule.computeIfAbsent(hostAddress.getHostUrl(), hostUrl -> {
       Runnable healthCheckNow = () -> {
         LOG.info("Starting ad-hoc health check for host: " + hostAddress.getHostZkNode());
-        healthCheckServiceHost(hostAddress.getServiceKey(), hostAddress.getHostUrl()).thenApply((b) -> {
-          // get rid of ourselves int the map, allowing others to schedule missing checks in the event that its not
-          // really missing.. guard here from any cross thread additions
-          synchronized (scheduledMissingHostChecks) {
-            adHocHealthCheckSchedule.remove(hostUrl);
-            if (adHocHealthCheckSchedule.isEmpty()) {
-              LOG.info("No more missing reports for service: " + hostAddress.getServiceKey());
-              scheduledMissingHostChecks.remove(hostAddress.getServiceKey());
+
+        Map<String, ZoolAnnouncement> serviceHostMap = meshNetwork.get(hostAddress.getServiceKey());
+        // get the announcement for this host
+        Optional<String> maybeAnnouncementId = serviceHostMap
+            .keySet()
+            .stream()
+            .filter(key -> key.equals(hostUrl))
+            .findFirst();
+
+
+        if(!maybeAnnouncementId.isPresent()) {
+          LOG.info("No Announcement for " + hostUrl);
+        }
+
+        maybeAnnouncementId.ifPresent(announcementId ->  healthCheckServiceHost(hostAddress.getServiceKey(), announcementId, serviceHostMap.get(announcementId)).thenAccept((b) -> {
+            // get rid of ourselves in the map, allowing others to schedule missing checks in the event that its not
+            // really missing.. guard here from any cross thread additions
+            synchronized (scheduledMissingHostChecks) {
+              adHocHealthCheckSchedule.remove(hostUrl);
+              if (adHocHealthCheckSchedule.isEmpty()) {
+                LOG.info("No more missing reports for service: " + hostAddress.getServiceKey());
+                scheduledMissingHostChecks.remove(hostAddress.getServiceKey());
+              }
             }
-          }
-          return b;
-        });
+          }));
       };
 
       executorService.submit(healthCheckNow);
@@ -442,9 +505,10 @@ public class ZoolServiceMesh {
    */
   public CompletableFuture<Boolean> reportMissing(String serviceName, String remoteHostUrl) {
     HostAddress hostAddress = new HostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
-    LOG.info("Zool Service Mesh recieved missing host report for hostAddress" + hostAddress);
+    LOG.info("Zool Service Mesh received missing host report for hostAddress" + hostAddress);
 
-    if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(getLocalHostUrlAndPort(isProd(), -1))) {
+    if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(
+        getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure()))) {
       // skipping self
       debugIf(LOG, () -> "Skipping health check on self at " + remoteHostUrl);
       return CompletableFuture.completedFuture(false);
@@ -456,27 +520,31 @@ public class ZoolServiceMesh {
       return CompletableFuture.completedFuture(false);
     }
 
-    Set<String> hostUrlsOnThisService = meshNetwork.get(serviceName);
+    Map<String, ZoolAnnouncement> hostUrlAndDataPairsOnThisServiceMesh = meshNetwork.get(serviceName);
 
-    if (!hostUrlsOnThisService.contains(remoteHostUrl)) {
+    Optional<ZoolAnnouncement> matchedHost = hostUrlAndDataPairsOnThisServiceMesh.keySet().stream()
+        .filter(key -> key.equals(remoteHostUrl))
+        .map(hostUrlAndDataPairsOnThisServiceMesh::get)
+        .findFirst();
+
+    if (!matchedHost.isPresent()) {
       // we don't know about this host, don't health check
       debugIf(LOG, () -> "Skipping health check, we dont know this service host: " + remoteHostUrl);
       return CompletableFuture.completedFuture(false);
-    }
+    } else {
 
-    // at this point we know about the host within our own service map, we'll report it missing
-    Set<String> set = missingReports.computeIfAbsent(serviceName, sN -> new CopyOnWriteArraySet<>());
-    // if we aren't already on the missing report
+      // at this point we know about the host within our own service map, we'll report it missing
+      Map<String, ZoolAnnouncement> set = missingReports.computeIfAbsent(serviceName, sN -> new ConcurrentHashMap<>());
+      // if we aren't already on the missing report
 
-    if (set.add(remoteHostUrl)) {
-      // schedule a health check. We'll remove it from the mesh and update the discovery services if it fails.
-      scheduleHostHealthCheck(hostAddress);
+      matchedHost.ifPresent(host -> {
+        set.put(remoteHostUrl, host);
+        // schedule a health check. We'll remove it from the mesh and update the discovery services if it fails.
+        scheduleHostHealthCheck(hostAddress);
 
+      });
       // return true even if its a repeat report.
       return CompletableFuture.completedFuture(true);
-    } else {
-      LOG.warn("Didn't schedule a health check for " + hostAddress);
-      return CompletableFuture.completedFuture(false);
     }
   }
 
@@ -494,7 +562,8 @@ public class ZoolServiceMesh {
 
   /**
    * Remove a host address from our service mesh
-   * @param hostAddress
+   *
+   * @param hostAddress the {@link HostAddress}
    */
   private void removeHostAddress(HostAddress hostAddress) {
     LOG.info("Remove Host Address: " + hostAddress);
@@ -507,17 +576,23 @@ public class ZoolServiceMesh {
     // run a network health check now
     networkHealthCheck();
   }
+
   /**
    * Health checks a host, and cleans it if necessary
    *
-   * @param serviceName   the service name
-   * @param remoteHostUrl the host url
+   * @param serviceName    the service name
+   * @param remoteHostUrl  the host url
+   * @param remoteHostData The announcement data
    *
    * @return a future of a boolean, with false if the host fails health check
    */
-  private CompletableFuture<Boolean> healthCheckServiceHost(String serviceName, String remoteHostUrl) {
+  private CompletableFuture<Boolean> healthCheckServiceHost(String serviceName,
+      String remoteHostUrl, ZoolAnnouncement remoteHostData) {
+
     HostAddress hostAddress = new HostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
-    if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(getLocalHostUrlAndPort(isProd(), -1))) {
+    String hostAndPort = getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure());
+
+    if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(hostAndPort)) {
       // skipping self
       debugIf(LOG, () -> "Skipping health check on self at " + remoteHostUrl);
       return CompletableFuture.completedFuture(true);
@@ -525,7 +600,9 @@ public class ZoolServiceMesh {
 
     debugIf(LOG, () -> "Heath Check Service Host: " + serviceName + "/" + remoteHostUrl);
     RestRequest.Builder<Object, String> healthCheckBuilderRequestBuilder = new RestRequest.Builder<>(Object.class,
-        String.class).setHost(hostAddress.getHost()).setPort(hostAddress.getPort());
+        String.class).setSecure(remoteHostData.securehost)
+        .setHost(hostAddress.getHost())
+        .setPort(hostAddress.getPort());
 
     if (serviceName.equals(zoolServiceKey)) {
       debugIf(LOG, () -> "Sending GET health check to a known discovery service instance at: " + remoteHostUrl);
@@ -564,16 +641,16 @@ public class ZoolServiceMesh {
   /**
    * Starts a cleaner thread for all hosts under a service
    *
-   * @param latch          the latch
+   * @param latch          the latch that will countdown when host check completes.
    * @param mutableHostSet the set of hosts to networkHealthCheck
    * @param serviceName    the service name
    *
    * @return a completable future.
    */
   private CompletableFuture<Void> startServiceHealthCheck(CountDownLatch latch,
-      Set<String> mutableHostSet,
+      Map<String, ZoolAnnouncement> mutableHostSet,
       String serviceName) {
-    Set<String> hostSetCopy = ImmutableSet.copyOf(mutableHostSet);
+    Map<String, ZoolAnnouncement> hostSetCopy = ImmutableMap.copyOf(mutableHostSet);
 
     if (hostSetCopy.isEmpty()) {
       LOG.info("No hosts to networkHealthCheck for service " + serviceName);
@@ -583,13 +660,14 @@ public class ZoolServiceMesh {
 
     LOG.info("Starting Health Check Requests for " + hostSetCopy.size() + " hosts");
 
-    CompletableFuture[] hostCheckFutures = hostSetCopy.stream()
-        .map(remoteHostUrl -> healthCheckServiceHost(serviceName, remoteHostUrl).thenApply(didExist -> {
-          if (!didExist) {
-            mutableHostSet.remove(remoteHostUrl);
-          }
-          return didExist;
-        }))
+    CompletableFuture[] hostCheckFutures = hostSetCopy.keySet().stream()
+        .map(remoteHostUrl -> healthCheckServiceHost(serviceName, remoteHostUrl, hostSetCopy.get(remoteHostUrl)).thenApply(
+            didExist -> {
+              if (!didExist) {
+                mutableHostSet.remove(remoteHostUrl);
+              }
+              return didExist;
+            }))
         .toArray(CompletableFuture[]::new);
 
     // waiting on these
@@ -601,7 +679,7 @@ public class ZoolServiceMesh {
    */
   private void startNetworkHealthCheck() {
     LOG.info("Starting Mesh Network health check");
-    Map<String, Set<String>> meshNetworkCopy = ImmutableMap.copyOf(getMeshNetwork());
+    Map<String, Map<String, ZoolAnnouncement>> meshNetworkCopy = getMeshNetwork();
     CountDownLatch cleanerLatch = new CountDownLatch(meshNetworkCopy.size());
 
     final long start = System.currentTimeMillis();
@@ -646,19 +724,6 @@ public class ZoolServiceMesh {
   }
 
   /**
-   * Announces a service host with no token. This will generate a {@link ZoolAnnouncement} with a new token :D.
-   *
-   * @param serviceKey service node name
-   * @param hostUri    the host uri
-   *
-   * @return a {@link ZoolAnnouncement}
-   */
-  public ZoolAnnouncement announceServiceHost(final String serviceKey, String hostUri) {
-    LOG.info("Announce Service Host -> " + serviceKey);
-    return announceServiceHost(serviceKey, hostUri, null);
-  }
-
-  /**
    * Returns true if the service key and hostUri represent THIS host instance.
    *
    * @param serviceKey the service key
@@ -671,31 +736,19 @@ public class ZoolServiceMesh {
   }
 
   /**
-   * Announces a service host with a token.
+   * Create the service node, or if it already exists, schedule a health check now to broadcast the new node being
+   * announced. This method cannot be executed in parallel.
    *
-   * @param serviceKey    the service key
-   * @param hostUri       the host
-   * @param existingToken an existing token (e.g. if it was staged)
-   *
-   * @return the {@link ZoolAnnouncement}
+   * @param servicePath the service path
+   * @param serviceKey  service key
+   * @param hostUri     the host uri being added.
    */
-  public ZoolAnnouncement announceServiceHost(final String serviceKey, String hostUri, String existingToken) {
-    if (StringUtils.isEmpty(hostUri) || StringUtils.isEmpty(serviceKey)) {
-      throw new IllegalStateException("Environment variables are not set for PROD or LOCAL server dns!");
-    }
-
-    ZoolAnnouncement announcement = new ZoolAnnouncement();
-    announcement.currentEpochTime = System.currentTimeMillis();
-    announcement.token = Optional.ofNullable(existingToken)
-        .map(String::getBytes)
-        .orElseGet(() -> getInstanceToken(hostUri));
-
-    final String servicePath = ZConst.PathSeparator.ZK.join(getZoolReader().getZool().getServiceMapNode(), serviceKey);
-
+  private synchronized boolean broadcastAnnouncement(String servicePath, String serviceKey, String hostUri) {
     if (!zoolReader.nodeExists(servicePath) && !zoolWriter.createPersistentNode(servicePath)) {
       LOG.warn(
           "Could not create persistent service path node: " + servicePath + " it may have been created by " +
               "another" + " service mesh host");
+      return false;
     } else {
       LOG.info("Node " + servicePath + " exists or was created successfully");
 
@@ -707,14 +760,63 @@ public class ZoolServiceMesh {
         scheduledExecutorService.schedule(
             () -> this.networkHealthCheck().thenRun(() -> announcementChangeScheduled = false), 2000,
             TimeUnit.MILLISECONDS);
+        return true;
       }
+      return false;
+    }
+  }
+
+  /**
+   * Announces a service host with no token. This will generate a {@link ZoolAnnouncement} with a new token :D.
+   *
+   * @param serviceKey service node name
+   * @param hostUri    the host uri
+   * @param isSecure true if this is a secure host.
+   *
+   * @return a {@link ZoolAnnouncement}
+   */
+  public ZoolAnnouncement announceServiceHost(final String serviceKey, String hostUri, boolean isSecure) {
+    LOG.info("Announce Service Host -> " + serviceKey);
+    return announceServiceHost(serviceKey, hostUri, isSecure, null);
+  }
+
+  /**
+   * Announces a service host with a token.
+   *
+   * @param serviceKey    the service key
+   * @param hostUri       the host
+   * @param isSecureHost  true if the host is secure.
+   * @param existingToken an existing token (e.g. if it was staged)
+   *
+   * @return the {@link ZoolAnnouncement}
+   */
+  public ZoolAnnouncement announceServiceHost(final String serviceKey,
+      String hostUri,
+      boolean isSecureHost,
+      String existingToken) {
+    LOG.info("Announcing service host: " + serviceKey + ", " + hostUri + ": " + existingToken);
+
+    if (StringUtils.isEmpty(hostUri) || StringUtils.isEmpty(serviceKey)) {
+      throw new IllegalStateException("Environment variables are not set for PROD or LOCAL server dns!");
     }
 
+    ZoolAnnouncement announcement = new ZoolAnnouncement();
+    announcement.currentEpochTime = System.currentTimeMillis();
+    announcement.securehost = isSecureHost;
+    announcement.token = Optional.ofNullable(existingToken)
+        .map(String::getBytes)
+        .orElseGet(() -> getInstanceToken(hostUri));
+
+    final String servicePath = ZConst.PathSeparator.ZK.join(getZoolReader().getZool().getServiceMapNode(), serviceKey);
+
+    // add the host before the network call to make its availability that much faster
     meshNetwork.computeIfAbsent(serviceKey, zsk -> {
       LOG.warn("First announcement from services of type: " + serviceKey + ", path: " + servicePath);
-      return new HashSet<>();
-    }).add(hostUri);
+      return new HashMap<>();
+    }).put(hostUri, announcement);
 
+    boolean didBroadcast = broadcastAnnouncement(servicePath, serviceKey, hostUri);
+    LOG.info((didBroadcast ? "Broadcast announcement: " : "Skipped broadcast: ") + servicePath + ", " + hostUri);
     final String hostNodePath = ZConst.PathSeparator.ZK.join(servicePath, hostUri);
 
     infoIf(LOG, () -> "Announcing Service Host: " + hostNodePath);
@@ -725,10 +827,6 @@ public class ZoolServiceMesh {
       announcement = null;
     } else {
       LOG.info("Created host node: " + hostNodePath + " with data: " + new String(announcement.token));
-    }
-
-    if (announcement != null) {
-      infoIf(LOG, () -> "Announced host node: " + hostNodePath);
     }
 
     return announcement;

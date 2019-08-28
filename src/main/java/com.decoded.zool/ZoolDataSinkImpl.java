@@ -1,9 +1,13 @@
 package com.decoded.zool;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -11,8 +15,8 @@ import java.util.function.Consumer;
 
 
 /**
- * The {@link ZoolDataSink} accepts data from a Zookeeper path watch. You can create any number of DataSink for a single
- * node. Also, you may drain data from different nodes on the same {@link Zool} instance.
+ * The {@link ZoolDataSink} accepts data from a {@link ZoolDataFlow} path watch. You can create any number of DataSink for a single
+ * Data Flow. Also, you may drain data from different DataFlow on the same {@link Zool} instance.
  */
 public class ZoolDataSinkImpl implements ZoolDataSink {
 
@@ -20,13 +24,16 @@ public class ZoolDataSinkImpl implements ZoolDataSink {
   private final String zNode;
   private final BiConsumer<String, byte[]> dataHandler;
   private final Consumer<String> noDataHandler;
-  private BiConsumer<String, List<String>> childNodesHandler;
-  private Consumer<String> noChildNodesHandler;
+  private BiConsumer<String, List<String>> childNodesHandler = (s, l) -> {
+    LOG.debug("Default children nodes handler");
+  };
+  private Consumer<String> noChildNodesHandler = (s) -> {
+    LOG.debug("Default no children handler");
+  };
 
-  private boolean willDisconnectOnNoData;
-  private boolean willDisconnectOnData;
-  private boolean readChildren;
-  private List<String> childNodeNames;
+  private boolean disconnectingAfterLoadComplete = false;
+  private boolean readChildren = false;
+  private List<String> childNodeNames = Collections.emptyList();
 
   private String name = ZoolDataSink.class.getName();
 
@@ -87,13 +94,8 @@ public class ZoolDataSinkImpl implements ZoolDataSink {
   }
 
   @Override
-  public boolean willDisconnectOnData() {
-    return willDisconnectOnData;
-  }
-
-  @Override
-  public boolean willDisconnectOnNoData() {
-    return willDisconnectOnNoData;
+  public boolean isDisconnectingAfterLoadComplete() {
+    return disconnectingAfterLoadComplete;
   }
 
   @Override
@@ -138,24 +140,69 @@ public class ZoolDataSinkImpl implements ZoolDataSink {
   }
 
   @Override
-  public ZoolDataSink disconnectWhenDataIsReceived() {
-    willDisconnectOnData = true;
+  public void onLoadComplete(final String zNode) {
+    LOG.info("Load complete for node: " + zNode);
+  }
+
+  public boolean isDisocnnectingAfterFirstLoad() {
+    return disconnectingAfterLoadComplete;
+  }
+
+  @Override
+  public ZoolDataSink disconnectAfterLoadComplete() {
+    disconnectingAfterLoadComplete = true;
     return this;
   }
 
   @Override
-  public ZoolDataSink disconnectWhenNoDataExists() {
-    willDisconnectOnNoData = true;
-    return this;
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    final ZoolDataSinkImpl that = (ZoolDataSinkImpl) o;
+
+    return new EqualsBuilder().append(disconnectingAfterLoadComplete, that.disconnectingAfterLoadComplete)
+        .append(readChildren, that.readChildren)
+        .append(zNode, that.zNode)
+        .append(dataHandler, that.dataHandler)
+        .append(noDataHandler, that.noDataHandler)
+        .append(childNodesHandler, that.childNodesHandler)
+        .append(noChildNodesHandler, that.noChildNodesHandler)
+        .append(childNodeNames, that.childNodeNames)
+        .append(name, that.name)
+        .isEquals();
   }
 
   @Override
-  public ZoolDataSink oneOff() {
-    LOG.info(
-        "Creating a One Off DataSink: " + getName() + "(" + getZNode() + "), which disconnects after its interaction "
-            + "completes");
-    disconnectWhenDataIsReceived();
-    disconnectWhenNoDataExists();
-    return this;
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(zNode)
+        .append(dataHandler)
+        .append(noDataHandler)
+        .append(childNodesHandler)
+        .append(noChildNodesHandler)
+        .append(disconnectingAfterLoadComplete)
+        .append(readChildren)
+        .append(childNodeNames)
+        .append(name)
+        .toHashCode();
+  }
+
+  @Override
+  public String toString() {
+    return new ToStringBuilder(this).append("zNode", zNode)
+        .append("dataHandler", dataHandler)
+        .append("noDataHandler", noDataHandler)
+        .append("childNodesHandler", childNodesHandler)
+        .append("noChildNodesHandler", noChildNodesHandler)
+        .append("disconnectingAfterLoadComplete", disconnectingAfterLoadComplete)
+        .append("readChildren", readChildren)
+        .append("childNodeNames", childNodeNames)
+        .append("name", name)
+        .toString();
   }
 }

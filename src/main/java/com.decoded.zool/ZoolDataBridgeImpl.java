@@ -55,12 +55,13 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
   @Override
   public void process(WatchedEvent event) {
     final String path = event.getPath();
-    debugIf(LOG, () -> "Processing event " + event.getType());
     if (event.getType() == Event.EventType.None) {
       if (event.getState().equals(Event.KeeperState.Expired)) {
+        LOG.warn("Session expired");
         die(Code.SESSIONEXPIRED);
       }
     } else {
+      debugIf(LOG, () -> "Processing event " + event.getType());
       // Something has changed on the node, let's find out
       // only handle our own node.
       if (path != null && path.equals(nodePath)) {
@@ -183,25 +184,31 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
    */
   private void status(Code statusCode) {
     byte[] newData = null;
-    infoIf(LOG, () -> "status: " + nodePath + " -> " + statusCode.name());
+    infoIf(LOG, () -> "[status] " + statusCode.name() + " received from Zookeeper on path: " + nodePath);
     Optional<ZoolWatcher> maybeZoolWatcher = Optional.ofNullable(zoolWatcher);
     if (statusCode == Code.OK) {
+
+      // try reading node data
       try {
         newData = zk.getData(nodePath, false, null);
       } catch (KeeperException e) {
-        // We don't need to worry about recovering now. The signal
-        // callbacks will kick off any exception handling
-        LOG.error("Could not get new data at: " + nodePath, e);
+        if(e instanceof KeeperException.ConnectionLossException) {
+          LOG.warn(
+              "[status] getData did not complete, no longer bridging DataSinks to events on path: {}, cause: {}, err " +
+                  "path: {}",
+              nodePath, e.getMessage(), e.getPath());
+        } else {
+          // We don't need to worry about recovering now. The signal
+          // callbacks will kick off any exception handling
+          LOG.error("[status] Could not getData at: " + nodePath, e);
+        }
       } catch (InterruptedException e) {
-        LOG.error("Interrupted while fetching new data from: " + nodePath, e);
-        zoolWatcher.onDataNotExists(nodePath);
+        LOG.error("[status] getData interrupted while fetching new data from: " + nodePath, e);
+        maybeZoolWatcher.ifPresent(zwatcher -> {
+          zwatcher.onDataNotExists(nodePath);
+          zwatcher.onLoadComplete(this.nodePath);
+        });
         return;
-      }
-
-      if ((newData == null && null != prevData) || (newData != null && !Arrays.equals(prevData, newData))) {
-        final byte[] nd = newData;
-        maybeZoolWatcher.ifPresent(zwatcher -> zwatcher.onData(this.nodePath, nd));
-        prevData = newData;
       }
 
       maybeZoolWatcher.ifPresent(zwatcher -> {
@@ -215,11 +222,21 @@ public class ZoolDataBridgeImpl implements ZoolDataBridge {
           }
         }
       });
+
+      if ((newData == null && null != prevData) || (newData != null && !Arrays.equals(prevData, newData))) {
+        final byte[] nd = newData;
+        maybeZoolWatcher.ifPresent(zwatcher -> zwatcher.onData(this.nodePath, nd));
+        prevData = newData;
+      }
+
     } else if (statusCode == Code.NONODE) {
       maybeZoolWatcher.ifPresent(zwatcher -> zwatcher.onDataNotExists(nodePath));
     } else {
       LOG.warn("Unhandled status code: " + statusCode.name());
     }
+
+    // onLoadComplete always called
+    maybeZoolWatcher.ifPresent(zwatcher -> zwatcher.onLoadComplete(this.nodePath));
   }
 
   @Override

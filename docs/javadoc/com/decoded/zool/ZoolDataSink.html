@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -129,28 +129,26 @@ var activeTableTab = "activeTableTab";
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#disconnectWhenDataIsReceived--">disconnectWhenDataIsReceived</a></span>()</code>
-<div class="block">Calling this on data sink (before fetching data) will cause the data sink to disconnect when its onData handler is
- called.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#disconnectAfterLoadComplete--">disconnectAfterLoadComplete</a></span>()</code>
+<div class="block">Disconnect after loading data and children.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#disconnectWhenNoDataExists--">disconnectWhenNoDataExists</a></span>()</code>
-<div class="block">Calling this on a data sink (before fetching data) will cause the data sink to disconnect when its onDataNotExists
- handler is called.</div>
-</td>
-</tr>
-<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#getName--">getName</a></span>()</code>
 <div class="block">Named datasink (useful for debugging and visualizing the flow of zookeeper data to your application).</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#getZNode--">getZNode</a></span>()</code>
 <div class="block">The Zookeeper node name that is draining to this data sink.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#isDisconnectingAfterLoadComplete--">isDisconnectingAfterLoadComplete</a></span>()</code>
+<div class="block">If true, this data sink should be disconnected after it receives and processes data and children</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
@@ -180,10 +178,9 @@ var activeTableTab = "activeTableTab";
 </td>
 </tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#oneOff--">oneOff</a></span>()</code>
-<div class="block">Calling this on data sink has the same behavior as calling both disconnectWhenDataIsReceived and
- disconnectWhenNoDataExists together.</div>
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#onLoadComplete-java.lang.String-">onLoadComplete</a></span>(java.lang.String&nbsp;zNode)</code>
+<div class="block">Completion of loading cycle</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
@@ -208,18 +205,6 @@ var activeTableTab = "activeTableTab";
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#setReadChildren-boolean-">setReadChildren</a></span>(boolean&nbsp;readChildren)</code>
 <div class="block">Read Children Nodes and watch for result updates</div>
-</td>
-</tr>
-<tr id="i13" class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#willDisconnectOnData--">willDisconnectOnData</a></span>()</code>
-<div class="block">If true, this data sink should be disconnected after it receives and processes data.</div>
-</td>
-</tr>
-<tr id="i14" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataSink.html#willDisconnectOnNoData--">willDisconnectOnNoData</a></span>()</code>
-<div class="block">If true, this data sink should be discarded if it recieves no data.</div>
 </td>
 </tr>
 </table>
@@ -388,78 +373,45 @@ var activeTableTab = "activeTableTab";
 </dl>
 </li>
 </ul>
-<a name="willDisconnectOnData--">
+<a name="onLoadComplete-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>willDisconnectOnData</h4>
-<pre>boolean&nbsp;willDisconnectOnData()</pre>
-<div class="block">If true, this data sink should be disconnected after it receives and processes data.</div>
+<h4>onLoadComplete</h4>
+<pre>void&nbsp;onLoadComplete(java.lang.String&nbsp;zNode)</pre>
+<div class="block">Completion of loading cycle</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>zNode</code> - the node</dd>
+</dl>
+</li>
+</ul>
+<a name="isDisconnectingAfterLoadComplete--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isDisconnectingAfterLoadComplete</h4>
+<pre>boolean&nbsp;isDisconnectingAfterLoadComplete()</pre>
+<div class="block">If true, this data sink should be disconnected after it receives and processes data and children</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a boolean</dd>
 </dl>
 </li>
 </ul>
-<a name="willDisconnectOnNoData--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>willDisconnectOnNoData</h4>
-<pre>boolean&nbsp;willDisconnectOnNoData()</pre>
-<div class="block">If true, this data sink should be discarded if it recieves no data.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>a boolean</dd>
-</dl>
-</li>
-</ul>
-<a name="disconnectWhenNoDataExists--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>disconnectWhenNoDataExists</h4>
-<pre><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a>&nbsp;disconnectWhenNoDataExists()</pre>
-<div class="block">Calling this on a data sink (before fetching data) will cause the data sink to disconnect when its onDataNotExists
- handler is called.
- <p>
- This is handy for cleaning up as early as possible</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data sink.</dd>
-</dl>
-</li>
-</ul>
-<a name="disconnectWhenDataIsReceived--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>disconnectWhenDataIsReceived</h4>
-<pre><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a>&nbsp;disconnectWhenDataIsReceived()</pre>
-<div class="block">Calling this on data sink (before fetching data) will cause the data sink to disconnect when its onData handler is
- called.</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data sink.</dd>
-</dl>
-</li>
-</ul>
-<a name="oneOff--">
+<a name="disconnectAfterLoadComplete--">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>oneOff</h4>
-<pre><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a>&nbsp;oneOff()</pre>
-<div class="block">Calling this on data sink has the same behavior as calling both disconnectWhenDataIsReceived and
- disconnectWhenNoDataExists together.</div>
+<h4>disconnectAfterLoadComplete</h4>
+<pre><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a>&nbsp;disconnectAfterLoadComplete()</pre>
+<div class="block">Disconnect after loading data and children.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data sink</dd>
+<dd>this data sink.</dd>
 </dl>
 </li>
 </ul>

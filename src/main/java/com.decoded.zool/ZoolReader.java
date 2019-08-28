@@ -75,6 +75,7 @@ public class ZoolReader {
       Consumer<String> noDataHandler) {
     debugIf(LOG, () -> "Read Zool Channel: " + channel);
     ZoolDataSink sink = new ZoolDataSinkImpl(channel, dataHandler, noDataHandler);
+    sink.setReadChildren(false);
     channels.computeIfAbsent(channel, c -> new ArrayList<>()).add(sink);
     zool.drain(sink);
     return sink;

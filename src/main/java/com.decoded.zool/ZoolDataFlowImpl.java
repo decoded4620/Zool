@@ -3,6 +3,7 @@ package com.decoded.zool;
 import com.decoded.zool.dataflow.DataFlowState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -14,10 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -87,33 +85,19 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
   public boolean isReadChildren() {
     // if any data sink on any channel is read children, return true.
     List<List<ZoolDataSink>> values = ImmutableList.copyOf(dataSinkMap.values());
-
-    return values.stream().anyMatch(dataSinkList -> dataSinkList.stream().anyMatch(ZoolDataSink::isReadChildren));
+    boolean atLeastOneDataSinkReadsChildren = values.stream().anyMatch(dataSinkList -> dataSinkList.stream().anyMatch(ZoolDataSink::isReadChildren));
+    debugIf(LOG, () -> "Is dataflow reading children: " + atLeastOneDataSinkReadsChildren);
+    return atLeastOneDataSinkReadsChildren;
   }
 
   @Override
-  public ZoolDataSink disconnectWhenDataIsReceived() {
-    return this;
+  public ZoolDataSink disconnectAfterLoadComplete() {
+    throw new NotImplementedException("Cannot use this method on Zool Data Flow");
   }
 
   @Override
-  public ZoolDataSink disconnectWhenNoDataExists() {
-    return this;
-  }
-
-  @Override
-  public boolean willDisconnectOnData() {
+  public boolean isDisconnectingAfterLoadComplete() {
     return false;
-  }
-
-  @Override
-  public boolean willDisconnectOnNoData() {
-    return false;
-  }
-
-  @Override
-  public ZoolDataSink oneOff() {
-    return this;
   }
 
   @Override
@@ -205,14 +189,16 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
   boolean unwatch(String zNode) {
     checkZoo();
     try {
-      debugIf(LOG, () -> "Unwatching Zool Node Path: " + zNode);
+      infoIf(LOG, () -> "Unwatching zool node: " + zNode);
       zk.removeWatches(zNode, this, WatcherType.Any, true);
+      infoIf(LOG, () -> "Unwatched zool node: " + zNode + " successfully");
       return true;
     } catch (InterruptedException ex) {
-      LOG.error("Interrupted while removing zoolDataBridgeMap at path: " + zNode);
+      LOG.error("Interrupted while unwatching zool node: " + zNode);
       state = DataFlowState.DISCONNECTED;
     } catch (KeeperException ex) {
       // do nothing
+      LOG.warn("Keeper Exception while unwatching zool node: ", ex);
     }
     return false;
   }
@@ -252,6 +238,7 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
     }
     checkZoo();
     zk.getData(path, watch, (rc, p, ctx, d, s) -> {
+      infoIf(LOG, () -> "Draining to path: " + p + " data: " + d.length);
       dataHandler.accept(p, d);
     }, inputContext);
   }
@@ -264,8 +251,9 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
     handlersAtPath.remove(dataSink);
     if (handlersAtPath.isEmpty()) {
+      LOG.info("Last handler for " + dataSink.getZNode() + " was removed!");
       if (!unwatch(dataSink.getZNode())) {
-        LOG.error("Could not accept data form sink: " + dataSink.getZNode());
+        LOG.error("Could not unwatch data from datasink: " + dataSink.getZNode());
       }
     }
   }
@@ -491,9 +479,9 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void onNoChildren(final String zNode) {
-    infoIf(LOG, () -> "No Children Received for " + zNode + (dataSinkMap.containsKey(zNode)
-        ? "(Watched!)"
-        : "(Not Watching!)"));
+    infoIf(LOG, () -> "onNoChildren(" + zNode + ") Node is " + (dataSinkMap.containsKey(zNode)
+        ? "Watched!"
+        : "Not Watched!"));
     Optional.ofNullable(dataSinkMap.get(zNode))
         .ifPresent(handlers -> handlers.stream()
             .filter(ZoolDataSink::isReadChildren)
@@ -502,9 +490,9 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void onChildren(final String zNode, final List<String> childNodes) {
-    infoIf(LOG, () -> "Children Received for " + zNode + " ==> " + childNodes.size() + (dataSinkMap.containsKey(zNode)
-        ? "(Watched!)"
-        : "(Not Watching!)"));
+    infoIf(LOG, () -> "onChildren(" + zNode + " ==> " + childNodes.size() + ") -> Node is " + (dataSinkMap.containsKey(zNode)
+        ? "Watched!"
+        : "Not Watched!"));
     // remove each of the data sinks that should disconnect when no data exists.
     Optional.ofNullable(dataSinkMap.get(zNode))
         .ifPresent(handlers -> handlers.stream()
@@ -514,22 +502,27 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   @Override
   public void onDataNotExists(String zNode) {
+    infoIf(LOG, () -> "onDataNotExists(" + zNode + ")");
     // remove each of the data sinks that should disconnect when no data exists.
     Optional.ofNullable(dataSinkMap.get(zNode))
-        .ifPresent(handlers -> handlers.stream()
-            .peek(handler -> handler.onDataNotExists(zNode))
-            .filter(ZoolDataSink::willDisconnectOnNoData)
-            .collect(Collectors.toList())
-            .forEach(this::drainStop));
+        .ifPresent(handlers -> handlers.forEach(handler -> handler.onDataNotExists(zNode)));
   }
 
   @Override
   public void onData(String zNode, byte[] data) {
+    infoIf(LOG, () -> "onData(" + zNode + ", " + data.length + ")");
     // remove each of the data sinks that should disconnect when no data exists.
     Optional.ofNullable(dataSinkMap.get(zNode))
-        .ifPresent(dataSinkList -> dataSinkList.stream()
-            .peek(dataSink -> dataSink.onData(dataSink.getZNode(), data))
-            .filter(ZoolDataSink::willDisconnectOnData)
+        .ifPresent(dataSinkList -> dataSinkList.forEach(dataSink -> dataSink.onData(dataSink.getZNode(), data)));
+  }
+
+  @Override
+  public void onLoadComplete(final String zNode) {
+    infoIf(LOG, () -> "onLoadComplete(" + zNode + ")");
+    Optional.ofNullable(dataSinkMap.get(zNode))
+        .ifPresent(handlers -> handlers.stream()
+            .peek(handler -> handler.onLoadComplete(zNode))
+            .filter(ZoolDataSink::isDisconnectingAfterLoadComplete)
             .collect(Collectors.toList())
             .forEach(this::drainStop));
   }

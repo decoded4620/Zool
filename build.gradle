@@ -38,6 +38,7 @@ dependencies {
     compile dependencies.jacksonDataFormatXML
     compile dependencies.jacksonDataFormatYAML
     implementation  dependencies.stereohttp
+    implementation  dependencies.javautils
 
     testCompile testDependencies.junit
     testCompile testDependencies.assertJCore

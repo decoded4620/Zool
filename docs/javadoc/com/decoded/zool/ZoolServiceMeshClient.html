@@ -168,43 +168,43 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code>java.util.concurrent.CompletableFuture&lt;java.util.List&lt;java.lang.String&gt;&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#findDiscoveryGateway--">findDiscoveryGateway</a></span>()</code>
+<td class="colFirst"><code>java.util.concurrent.CompletableFuture&lt;java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getDiscoveryGatewayHosts--">getDiscoveryGatewayHosts</a></span>()</code>
 <div class="block">Initializes the client gateway knowledge.</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getGatewayHosts--">getGatewayHosts</a></span>()</code>
 <div class="block">Gets the set of known gateway hosts</div>
 </td>
 </tr>
 <tr id="i5" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>com.decoded.javautil.Pair&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getGatewayHostUrl--">getGatewayHostUrl</a></span>()</code>
 <div class="block">Gets the next gateway host url.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>com.decoded.javautil.Pair&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getNextServiceHost-java.lang.String-">getNextServiceHost</a></span>(java.lang.String&nbsp;serviceKey)</code>
 <div class="block">Returns the next "best" host to use for a service key.</div>
 </td>
 </tr>
 <tr id="i7" class="rowColor">
-<td class="colFirst"><code>java.util.Set&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getOrCreateServiceFabric-java.lang.String-">getOrCreateServiceFabric</a></span>(java.lang.String&nbsp;serviceKey)</code>
 <div class="block">Get (or create) a service fabric locally for the service key in our local mesh.</div>
 </td>
 </tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getServiceHosts-java.lang.String-">getServiceHosts</a></span>(java.lang.String&nbsp;serviceKey)</code>
 <div class="block">Returns the set of hosts for a service.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colFirst"><code>java.util.Set&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getServices--">getServices</a></span>()</code>
 <div class="block">Gets a set of known services from zookeeper.</div>
 </td>
@@ -222,7 +222,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i12" class="altColor">
-<td class="colFirst"><code>java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;</code></td>
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getZoolServiceMesh--">getZoolServiceMesh</a></span>()</code>
 <div class="block">Returns a copy of the service mesh.</div>
 </td>
@@ -284,14 +284,14 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i22" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#updateServiceMesh-java.util.Map-">updateServiceMesh</a></span>(java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;freshMesh)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#updateServiceMesh-java.util.Map-">updateServiceMesh</a></span>(java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;&nbsp;freshMesh)</code>
 <div class="block">Update the service mesh without option to reannounce</div>
 </td>
 </tr>
 <tr id="i23" class="rowColor">
 <td class="colFirst"><code>&lt;X&gt;&nbsp;java.util.concurrent.CompletableFuture&lt;X&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#updateServiceMesh-java.util.Map-java.util.function.BiFunction-">updateServiceMesh</a></span>(java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;freshMesh,
-                 java.util.function.BiFunction&lt;java.lang.String,java.lang.Integer,java.util.concurrent.CompletableFuture&lt;X&gt;&gt;&nbsp;announcer)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#updateServiceMesh-java.util.Map-java.util.function.Function-">updateServiceMesh</a></span>(java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;&nbsp;freshMesh,
+                 java.util.function.Function&lt;java.lang.Boolean,java.util.concurrent.CompletableFuture&lt;X&gt;&gt;&nbsp;announcer)</code>
 <div class="block">Update the service mesh directly.</div>
 </td>
 </tr>
@@ -407,19 +407,20 @@ extends java.lang.Object</pre>
 <div class="block">Set the announcement flag.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>announced</code> - </dd>
+<dd><code>announced</code> - true if we are announced</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>this client</dd>
 </dl>
 </li>
 </ul>
-<a name="updateServiceMesh-java.util.Map-java.util.function.BiFunction-">
+<a name="updateServiceMesh-java.util.Map-java.util.function.Function-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>updateServiceMesh</h4>
-<pre>public&nbsp;&lt;X&gt;&nbsp;java.util.concurrent.CompletableFuture&lt;X&gt;&nbsp;updateServiceMesh(java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;freshMesh,
-                                                                       java.util.function.BiFunction&lt;java.lang.String,java.lang.Integer,java.util.concurrent.CompletableFuture&lt;X&gt;&gt;&nbsp;announcer)</pre>
+<pre>public&nbsp;&lt;X&gt;&nbsp;java.util.concurrent.CompletableFuture&lt;X&gt;&nbsp;updateServiceMesh(java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;&nbsp;freshMesh,
+                                                                       java.util.function.Function&lt;java.lang.Boolean,java.util.concurrent.CompletableFuture&lt;X&gt;&gt;&nbsp;announcer)</pre>
 <div class="block">Update the service mesh directly. If an announce method is passed in it is invoked in the event that the current
  host is not known in the updated map. (this re-announces)</div>
 <dl>
@@ -439,7 +440,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>updateServiceMesh</h4>
-<pre>public&nbsp;void&nbsp;updateServiceMesh(java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;freshMesh)</pre>
+<pre>public&nbsp;void&nbsp;updateServiceMesh(java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;&nbsp;freshMesh)</pre>
 <div class="block">Update the service mesh without option to reannounce</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -493,7 +494,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getZoolServiceMesh</h4>
-<pre>public&nbsp;java.util.Map&lt;java.lang.String,java.util.Set&lt;java.lang.String&gt;&gt;&nbsp;getZoolServiceMesh()</pre>
+<pre>public&nbsp;java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;&nbsp;getZoolServiceMesh()</pre>
 <div class="block">Returns a copy of the service mesh. This is a modifiable map, but is a copy of the current mesh network for
  safety.</div>
 <dl>
@@ -508,7 +509,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getOrCreateServiceFabric</h4>
-<pre>public&nbsp;java.util.Set&lt;java.lang.String&gt;&nbsp;getOrCreateServiceFabric(java.lang.String&nbsp;serviceKey)</pre>
+<pre>public&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&nbsp;getOrCreateServiceFabric(java.lang.String&nbsp;serviceKey)</pre>
 <div class="block">Get (or create) a service fabric locally for the service key in our local mesh.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -585,7 +586,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getGatewayHostUrl</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getGatewayHostUrl()</pre>
+<pre>public&nbsp;com.decoded.javautil.Pair&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&nbsp;getGatewayHostUrl()</pre>
 <div class="block">Gets the next gateway host url.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -599,7 +600,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getGatewayHosts</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getGatewayHosts()</pre>
+<pre>public&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&nbsp;getGatewayHosts()</pre>
 <div class="block">Gets the set of known gateway hosts</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -617,16 +618,17 @@ extends java.lang.Object</pre>
 <div class="block">Connect to zookeeper server</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
+<dd>this client.</dd>
 </dl>
 </li>
 </ul>
-<a name="findDiscoveryGateway--">
+<a name="getDiscoveryGatewayHosts--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>findDiscoveryGateway</h4>
-<pre>public&nbsp;java.util.concurrent.CompletableFuture&lt;java.util.List&lt;java.lang.String&gt;&gt;&nbsp;findDiscoveryGateway()</pre>
+<h4>getDiscoveryGatewayHosts</h4>
+<pre>public&nbsp;java.util.concurrent.CompletableFuture&lt;java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;&nbsp;getDiscoveryGatewayHosts()</pre>
 <div class="block">Initializes the client gateway knowledge. This will connect directly to zookeeper and get the gateway hosts.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -650,7 +652,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getServiceHosts</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getServiceHosts(java.lang.String&nbsp;serviceKey)</pre>
+<pre>public&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&nbsp;getServiceHosts(java.lang.String&nbsp;serviceKey)</pre>
 <div class="block">Returns the set of hosts for a service.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -666,7 +668,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getServices</h4>
-<pre>public&nbsp;java.util.List&lt;java.lang.String&gt;&nbsp;getServices()</pre>
+<pre>public&nbsp;java.util.Set&lt;java.lang.String&gt;&nbsp;getServices()</pre>
 <div class="block">Gets a set of known services from zookeeper.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -680,7 +682,7 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getNextServiceHost</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getNextServiceHost(java.lang.String&nbsp;serviceKey)</pre>
+<pre>public&nbsp;com.decoded.javautil.Pair&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&nbsp;getNextServiceHost(java.lang.String&nbsp;serviceKey)</pre>
 <div class="block">Returns the next "best" host to use for a service key.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

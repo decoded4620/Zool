@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9,"i1":9,"i2":9,"i3":9};
+var methods = {"i0":9,"i1":9,"i2":9,"i3":9,"i4":9,"i5":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -156,21 +156,33 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>static int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getCurrentPort-int-">getCurrentPort</a></span>(int&nbsp;fallbackPort)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getCurrentPort--">getCurrentPort</a></span>()</code>
 <div class="block">returns the current http port that the http server is serving on.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getCurrentSecurePort--">getCurrentSecurePort</a></span>()</code>
+<div class="block">Get the current secure SSL Port.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrl-boolean-">getLocalHostUrl</a></span>(boolean&nbsp;isProd)</code>
 <div class="block">Returns the host url</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrlAndPort-boolean-int-">getLocalHostUrlAndPort</a></span>(boolean&nbsp;isProd,
-                      int&nbsp;fallbackPort)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrlAndPort-boolean-boolean-">getLocalHostUrlAndPort</a></span>(boolean&nbsp;isProd,
+                      boolean&nbsp;isSecure)</code>
 <div class="block">Returns the DNS based identifier for this machine.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>static boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#isSecure--">isSecure</a></span>()</code>
+<div class="block">Returns true if the host is running on a secure port.</div>
 </td>
 </tr>
 </table>
@@ -212,19 +224,45 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="getCurrentPort-int-">
+<a name="getCurrentPort--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getCurrentPort</h4>
-<pre>public static&nbsp;int&nbsp;getCurrentPort(int&nbsp;fallbackPort)</pre>
+<pre>public static&nbsp;int&nbsp;getCurrentPort()</pre>
 <div class="block">returns the current http port that the http server is serving on.</div>
 <dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>fallbackPort</code> - the fallback port.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the current port, an integer.</dd>
+</dl>
+</li>
+</ul>
+<a name="getCurrentSecurePort--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getCurrentSecurePort</h4>
+<pre>public static&nbsp;int&nbsp;getCurrentSecurePort()</pre>
+<div class="block">Get the current secure SSL Port.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the port</dd>
+</dl>
+</li>
+</ul>
+<a name="isSecure--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isSecure</h4>
+<pre>public static&nbsp;boolean&nbsp;isSecure()</pre>
+<div class="block">Returns true if the host is running on a secure port.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>boolean, true if we're a secure host.</dd>
 </dl>
 </li>
 </ul>
@@ -244,19 +282,19 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getLocalHostUrlAndPort-boolean-int-">
+<a name="getLocalHostUrlAndPort-boolean-boolean-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getLocalHostUrlAndPort</h4>
 <pre>public static&nbsp;java.lang.String&nbsp;getLocalHostUrlAndPort(boolean&nbsp;isProd,
-                                                      int&nbsp;fallbackPort)</pre>
+                                                      boolean&nbsp;isSecure)</pre>
 <div class="block">Returns the DNS based identifier for this machine.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>isProd</code> - boolean</dd>
-<dd><code>fallbackPort</code> - the fallback port to try</dd>
+<dd><code>isSecure</code> - true if this is a secure host.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a String that uniquely identifies this host in the service key cluster on zookeeper.</dd>
 </dl>

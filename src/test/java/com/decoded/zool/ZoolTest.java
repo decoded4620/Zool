@@ -272,28 +272,18 @@ public class ZoolTest implements WithAssertions {
         }
 
         @Override
-        public ZoolDataSink oneOff() {
-          return this;
+        public void onLoadComplete(final String zNode) {
+
         }
 
         @Override
-        public ZoolDataSink disconnectWhenDataIsReceived() {
-          return this;
-        }
-
-        @Override
-        public ZoolDataSink disconnectWhenNoDataExists() {
-          return this;
-        }
-
-        @Override
-        public boolean willDisconnectOnData() {
+        public boolean isDisconnectingAfterLoadComplete() {
           return false;
         }
 
         @Override
-        public boolean willDisconnectOnNoData() {
-          return false;
+        public ZoolDataSink disconnectAfterLoadComplete() {
+          return this;
         }
       });
     }
@@ -354,33 +344,25 @@ public class ZoolTest implements WithAssertions {
         }
 
         @Override
+        public void onLoadComplete(final String zNode) {
+
+        }
+
+        @Override
         public void onZoolSessionInvalid(KeeperException.Code rc, String nodePath) {
         }
 
         @Override
-        public ZoolDataSink disconnectWhenNoDataExists() {
+        public ZoolDataSink disconnectAfterLoadComplete() {
           return this;
         }
 
-        @Override
-        public ZoolDataSink disconnectWhenDataIsReceived() {
-          return this;
-        }
 
         @Override
-        public ZoolDataSink oneOff() {
-          return this;
-        }
-
-        @Override
-        public boolean willDisconnectOnData() {
+        public boolean isDisconnectingAfterLoadComplete() {
           return false;
         }
 
-        @Override
-        public boolean willDisconnectOnNoData() {
-          return false;
-        }
       });
     }
   }

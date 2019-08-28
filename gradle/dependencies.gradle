@@ -6,6 +6,7 @@ ext {
     jacksonVersion = "2.9.7"
     mockitoVersion = "2.27.0"
     stereoVersion = "1.0"
+    javautilsVersion = "1.0"
     zookeeperVersion = "3.5.4-beta"
     appDependencies = [
             guice                : "com.google.inject:guice:4.0",
@@ -14,7 +15,8 @@ ext {
             jacksonDataBind      : "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             jacksonDataFormatYAML: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion",
             jacksonDataFormatXML : "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion",
-            stereohttp           : "com.decoded:stereohttp:$stereoVersion"
+            stereohttp           : "com.decoded:stereohttp:$stereoVersion",
+            javautils           : "com.decoded:java-utils:$javautilsVersion"
     ]
 
     testDependencies = [
