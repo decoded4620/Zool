@@ -354,10 +354,6 @@ public class ZoolServiceMesh {
     infoIf(LOG, () -> "Updating hosts from Zool for " + serviceKeys.size() + " services");
     if (!serviceKeys.isEmpty()) {
       return CompletableFuture.supplyAsync(() -> {
-//        Set<String> existingServices = meshNetwork.keySet();
-        // remove any keys that are no longer known to zookeeper (except our own service key!)
-//        existingServices.stream().filter(key -> !key.equals(zoolServiceKey)).filter(key -> !serviceKeys.contains(key)).forEach(meshNetwork::remove);
-
         serviceKeys.forEach(serviceKey -> {
           // inner jobs?
           final String servicePath = ZConst.PathSeparator.ZK.join(getZoolReader().getZool().getServiceMapNode(),
@@ -365,10 +361,8 @@ public class ZoolServiceMesh {
 
           if (!zoolReader.isReading(servicePath)) {
             zoolReader.readChildren(servicePath, (sp, hostList) -> {
-              debugIf(LOG, () -> "-------------------------------------------------------------");
               infoIf(LOG, () -> "Loading " + hostList.size() + " hosts from service path: " + sp);
-              // only care about the service hosts loading here here.
-//              meshNetwork.remove(serviceKey);
+
               hostList.forEach(hostKey -> {
                 debugIf(LOG, () -> "Reading host data: " + hostKey);
                 // read the zookeeper data
@@ -385,12 +379,12 @@ public class ZoolServiceMesh {
                           infoIf(LOG, () -> "Announcement: " + hostKey + " was already made");
                         }
                       } else {
-                        LOG.error("--------------------------\nZilli announcement was invalid, no token was included\n--------------------------------");
+                        LOG.error("Zilli announcement was invalid, no token was included");
                       }
                     },
                     keyNoData -> {
                       infoIf(LOG, () -> "Key " + keyNoData + " was read, but no data was inside!");
-                    });//.disconnectAfterLoadComplete();
+                    });
               });
               infoIf(LOG, () -> "Updated mesh for " + serviceKey + " to " + hostList.size() + " total hosts");
             }, p -> LOG.warn("No hosts found on service path " + p));
