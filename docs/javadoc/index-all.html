@@ -108,7 +108,11 @@
 </dd>
 <dt><a href="com/decoded/zool/package-summary.html">com.decoded.zool</a> - package com.decoded.zool</dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/decoded/zool/announcer/package-summary.html">com.decoded.zool.announcer</a> - package com.decoded.zool.announcer</dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/decoded/zool/dataflow/package-summary.html">com.decoded.zool.dataflow</a> - package com.decoded.zool.dataflow</dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/decoded/zool/models/package-summary.html">com.decoded.zool.models</a> - package com.decoded.zool.models</dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/Zool.html#connect--">connect()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></dt>
 <dd>
@@ -260,6 +264,10 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/HostAddress.html#equals-java.lang.Object-">equals(Object)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/HostAddress.html" title="class in com.decoded.zool">HostAddress</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceGateway.html#equals-java.lang.Object-">equals(Object)</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models">ServiceGateway</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#equals-java.lang.Object-">equals(Object)</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolAnnouncement.html#equals-java.lang.Object-">equals(Object)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataSinkImpl.html#equals-java.lang.Object-">equals(Object)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataSinkImpl.html" title="class in com.decoded.zool">ZoolDataSinkImpl</a></dt>
@@ -340,10 +348,18 @@
 <dd>
 <div class="block">Returns the host name without port</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#getHosts-java.lang.String-">getHosts(String)</a></span> - Method in class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
+<dd>
+<div class="block">Return the set of hosts for a service key.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceGateway.html#getHosts--">getHosts()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models">ServiceGateway</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/HostAddress.html#getHostUrl--">getHostUrl()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/HostAddress.html" title="class in com.decoded.zool">HostAddress</a></dt>
 <dd>
 <div class="block">returns the url (with port)</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#getHostUrl--">getHostUrl()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/HostAddress.html#getHostZkNode--">getHostZkNode()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/HostAddress.html" title="class in com.decoded.zool">HostAddress</a></dt>
 <dd>
 <div class="block">The Host Zookeeper Node Path</div>
@@ -359,6 +375,10 @@
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrlAndPort-boolean-boolean-">getLocalHostUrlAndPort(boolean, boolean)</a></span> - Static method in class com.decoded.zool.<a href="com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool">ZoolSystemUtil</a></dt>
 <dd>
 <div class="block">Returns the DNS based identifier for this machine.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#getMeshNetwork--">getMeshNetwork()</a></span> - Method in class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
+<dd>
+<div class="block">Returns the Client representation of the mesh network of hosts that are available on the network.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#getMeshNetwork--">getMeshNetwork()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>
@@ -400,6 +420,8 @@
 <dd>
 <div class="block">Get the port</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#getPort--">getPort()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/Zool.html#getPort--">getPort()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></dt>
 <dd>
 <div class="block">Get the port</div>
@@ -416,6 +438,8 @@
 <dd>
 <div class="block">The service key for this host</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceGateway.html#getServiceKey--">getServiceKey()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models">ServiceGateway</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/HostAddress.html#getServiceMapNode--">getServiceMapNode()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/HostAddress.html" title="class in com.decoded.zool">HostAddress</a></dt>
 <dd>
 <div class="block">The service map node name</div>
@@ -432,6 +456,8 @@
 <dd>
 <div class="block">The zookeeper timeout value</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#getToken--">getToken()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlowImpl.html#getZNode--">getZNode()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataSink.html#getZNode--">getZNode()</a></span> - Method in interface com.decoded.zool.<a href="com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a></dt>
@@ -466,6 +492,10 @@
 <dd>
 <div class="block">Returns this clients service key.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#getZoolServiceMesh--">getZoolServiceMesh()</a></span> - Method in class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
+<dd>
+<div class="block">Returns the zool service mesh, which knows the underlying network representation (for internal use).</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMeshClient.html#getZoolServiceMesh--">getZoolServiceMesh()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></dt>
 <dd>
 <div class="block">Returns a copy of the service mesh.</div>
@@ -481,6 +511,10 @@
 <h2 class="title">H</h2>
 <dl>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/HostAddress.html#hashCode--">hashCode()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/HostAddress.html" title="class in com.decoded.zool">HostAddress</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceGateway.html#hashCode--">hashCode()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models">ServiceGateway</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#hashCode--">hashCode()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolAnnouncement.html#hashCode--">hashCode()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a></dt>
 <dd>&nbsp;</dd>
@@ -571,6 +605,8 @@
 <dd>
 <div class="block">True if zool reader is reading a specific channel.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#isSecure--">isSecure()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#isSecure--">isSecure()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolSystemUtil.html#isSecure--">isSecure()</a></span> - Static method in class com.decoded.zool.<a href="com/decoded/zool/ZoolSystemUtil.html" title="class in com.decoded.zool">ZoolSystemUtil</a></dt>
@@ -723,6 +759,10 @@
 <dd>
 <div class="block">Remove a node.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#reportMissing-java.lang.String-java.lang.String-">reportMissing(String, String)</a></span> - Method in class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
+<dd>
+<div class="block">Report Missing.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#reportMissing-java.lang.String-java.lang.String-">reportMissing(String, String)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>
 <div class="block">Reports a host missing for a service key.</div>
@@ -749,9 +789,21 @@
 <dd>
 <div class="block">Serialize a <a href="com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool"><code>ZoolAnnouncement</code></a> into a byte[] of json data</div>
 </dd>
+<dt><a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models"><span class="typeNameLink">ServiceGateway</span></a> - Class in <a href="com/decoded/zool/models/package-summary.html">com.decoded.zool.models</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceGateway.html#ServiceGateway--">ServiceGateway()</a></span> - Constructor for class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models">ServiceGateway</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models"><span class="typeNameLink">ServiceHost</span></a> - Class in <a href="com/decoded/zool/models/package-summary.html">com.decoded.zool.models</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#ServiceHost--">ServiceHost()</a></span> - Constructor for class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMeshClient.html#setAnnounced-boolean-">setAnnounced(boolean)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></dt>
 <dd>
 <div class="block">Set the announcement flag.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#setAnnouncementProcessorInterval-int-">setAnnouncementProcessorInterval(int)</a></span> - Method in class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
+<dd>
+<div class="block">Set the interval (in milliseconds) to process announcements.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlowImpl.html#setChildNodesHandler-java.util.function.BiConsumer-">setChildNodesHandler(BiConsumer&lt;String, List&lt;String&gt;&gt;)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></dt>
 <dd>&nbsp;</dd>
@@ -771,6 +823,10 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlowImpl.html#setHost-java.lang.String-">setHost(String)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceGateway.html#setHosts-java.util.List-">setHosts(List&lt;ServiceHost&gt;)</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models">ServiceGateway</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#setHostUrl-java.lang.String-">setHostUrl(String)</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlowImpl.html#setNoChildNodesHandler-java.util.function.Consumer-">setNoChildNodesHandler(Consumer&lt;String&gt;)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataSink.html#setNoChildNodesHandler-java.util.function.Consumer-">setNoChildNodesHandler(Consumer&lt;String&gt;)</a></span> - Method in interface com.decoded.zool.<a href="com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a></dt>
@@ -778,6 +834,8 @@
 <div class="block">Set the handler for not having child node information on a path</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataSinkImpl.html#setNoChildNodesHandler-java.util.function.Consumer-">setNoChildNodesHandler(Consumer&lt;String&gt;)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataSinkImpl.html" title="class in com.decoded.zool">ZoolDataSinkImpl</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#setPort-int-">setPort(int)</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/Zool.html#setPort-int-">setPort(int)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></dt>
 <dd>
@@ -809,10 +867,14 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataSinkImpl.html#setReadChildren-boolean-">setReadChildren(boolean)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataSinkImpl.html" title="class in com.decoded.zool">ZoolDataSinkImpl</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#setSecure-boolean-">setSecure(boolean)</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#setServiceHealthCheckTimeout-int-">setServiceHealthCheckTimeout(int)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>
 <div class="block">The timeout value for service healthcheck.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceGateway.html#setServiceKey-java.lang.String-">setServiceKey(String)</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models">ServiceGateway</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/Zool.html#setServiceMapNode-java.lang.String-">setServiceMapNode(String)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></dt>
 <dd>
 <div class="block">Set the name of the node pertaining to the service map</div>
@@ -826,6 +888,8 @@
 <div class="block">The amount of time to wait on zookeeper reponses before timing out.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolDataFlowImpl.html#setTimeout-int-">setTimeout(int)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#setToken-java.lang.String-">setToken(String)</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/Zool.html#setZookeeperHost-java.lang.String-">setZookeeperHost(String)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/Zool.html" title="class in com.decoded.zool">Zool</a></dt>
 <dd>
@@ -843,9 +907,21 @@
 <dd>
 <div class="block">Change the service key for this client.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#stageAnnouncement-java.lang.String-java.lang.String-int-">stageAnnouncement(String, String, int)</a></span> - Method in class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
+<dd>
+<div class="block">Stages an announcement of a service host on the service gateway for a service key.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#start--">start()</a></span> - Method in class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
+<dd>
+<div class="block">Start the Zilli Service.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#start-boolean-">start(boolean)</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>
 <div class="block">Start the service mesh.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#stop--">stop()</a></span> - Method in class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
+<dd>
+<div class="block">Stops the service, disconnecting from zool.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolServiceMesh.html#stop--">stop()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolServiceMesh.html" title="class in com.decoded.zool">ZoolServiceMesh</a></dt>
 <dd>
@@ -866,6 +942,10 @@
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolAnnouncement.html#token">token</a></span> - Variable in class com.decoded.zool.<a href="com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/HostAddress.html#toString--">toString()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/HostAddress.html" title="class in com.decoded.zool">HostAddress</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceGateway.html#toString--">toString()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceGateway.html" title="class in com.decoded.zool.models">ServiceGateway</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/models/ServiceHost.html#toString--">toString()</a></span> - Method in class com.decoded.zool.models.<a href="com/decoded/zool/models/ServiceHost.html" title="class in com.decoded.zool.models">ServiceHost</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolAnnouncement.html#toString--">toString()</a></span> - Method in class com.decoded.zool.<a href="com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a></dt>
 <dd>&nbsp;</dd>
@@ -960,6 +1040,12 @@ the order they are declared.</div>
 <div class="block">DataObject stored on zookeeper for zool announced hosts in each service node created.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/zool/ZoolAnnouncement.html#ZoolAnnouncement--">ZoolAnnouncement()</a></span> - Constructor for class com.decoded.zool.<a href="com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer"><span class="typeNameLink">ZoolAnnouncer</span></a> - Class in <a href="com/decoded/zool/announcer/package-summary.html">com.decoded.zool.announcer</a></dt>
+<dd>
+<div class="block">This class represents the service between clients and zookeeper.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/zool/announcer/ZoolAnnouncer.html#ZoolAnnouncer-com.decoded.zool.ZoolServiceMesh-">ZoolAnnouncer(ZoolServiceMesh)</a></span> - Constructor for class com.decoded.zool.announcer.<a href="com/decoded/zool/announcer/ZoolAnnouncer.html" title="class in com.decoded.zool.announcer">ZoolAnnouncer</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/decoded/zool/ZoolDataBridge.html" title="interface in com.decoded.zool"><span class="typeNameLink">ZoolDataBridge</span></a> - Interface in <a href="com/decoded/zool/package-summary.html">com.decoded.zool</a></dt>
 <dd>
