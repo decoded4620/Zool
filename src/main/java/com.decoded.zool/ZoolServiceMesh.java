@@ -2,13 +2,12 @@ package com.decoded.zool;
 
 import com.decoded.javautil.Pair;
 import com.decoded.stereohttp.RequestMethod;
-import com.decoded.stereohttp.RestRequest;
 import com.decoded.stereohttp.StereoHttpClient;
+import com.decoded.stereohttp.StereoHttpRequest;
 import com.decoded.stereohttp.StereoHttpTask;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -37,13 +36,13 @@ import static com.decoded.zool.ZoolSystemUtil.getLocalHostUrlAndPort;
 public class ZoolServiceMesh {
   private static final Logger LOG = LoggerFactory.getLogger(ZoolServiceMesh.class);
   // 5 minutes in milliseconds
-  private static final int TOKEN_EXPIRY_TIME = 1000 * 60 * 5;
+
   private static final long MIN_TIME = 15000L;
 
   // these intervals start aggressive (small times) and get larger as they "ramp" up. each loop of the intervals
   // will grow these intervals until they "mature" to their max value.
   private static final ElasticInterval internalCleanInterval = ElasticInterval.elasticRamp(.15, MIN_TIME,
-      TOKEN_EXPIRY_TIME / 5);
+      30000);
   private static final ElasticInterval serviceCleanScheduleInterval = ElasticInterval.elasticRamp(.10, MIN_TIME, 3000);
   private final StereoHttpClient stereoHttpClient;
   private final ExecutorService executorService;
@@ -77,18 +76,6 @@ public class ZoolServiceMesh {
     this.executorService = executorService;
     this.scheduledExecutorService = scheduledExecutorService;
     this.stereoHttpClient = stereoHttpClient;
-  }
-
-  /**
-   * Generates an instance token for a host uri, and base64 encodes it. A new token value is generated each minute.
-   *
-   * @param hostUri the host uri, e.g. <code>"localhost:9000"</code>
-   *
-   * @return a byte[] for the new token generated.
-   */
-  public static byte[] getInstanceToken(String hostUri) {
-    // generates a new token every 5 minutes
-    return Base64.getEncoder().encode((hostUri + "::" + System.currentTimeMillis() / TOKEN_EXPIRY_TIME).getBytes());
   }
 
   /**
@@ -584,16 +571,16 @@ public class ZoolServiceMesh {
       String remoteHostUrl, ZoolAnnouncement remoteHostData) {
 
     HostAddress hostAddress = new HostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
-    String hostAndPort = getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure());
+    final String localHostUrlAndPort = getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure());
 
-    if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(hostAndPort)) {
+    if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(localHostUrlAndPort)) {
       // skipping self
       debugIf(LOG, () -> "Skipping health check on self at " + remoteHostUrl);
       return CompletableFuture.completedFuture(true);
     }
 
     debugIf(LOG, () -> "Heath Check Service Host: " + serviceName + "/" + remoteHostUrl);
-    RestRequest.Builder<Object, String> healthCheckBuilderRequestBuilder = new RestRequest.Builder<>(Object.class,
+    StereoHttpRequest.Builder<Object, String> healthCheckBuilderRequestBuilder = new StereoHttpRequest.Builder<>(Object.class,
         String.class).setSecure(remoteHostData.securehost)
         .setHost(hostAddress.getHost())
         .setPort(hostAddress.getPort());
@@ -612,14 +599,15 @@ public class ZoolServiceMesh {
           .setBody(serializedMeshNetwork());
     }
 
-    RestRequest<Object, String> restRequest = healthCheckBuilderRequestBuilder.setRequestPath(
+    StereoHttpRequest<Object, String> stereoHttpRequest = healthCheckBuilderRequestBuilder.setRequestPath(
         discoveryHealthCheckEndpoint).build();
 
-    return new StereoHttpTask<>(stereoHttpClient, serviceHealthCheckTimeout).execute(Object.class, restRequest)
+    return new StereoHttpTask<>(stereoHttpClient, serviceHealthCheckTimeout).execute(Object.class, stereoHttpRequest)
         .thenApplyAsync(dynamicDiscoveryFeedback -> {
           debugIf(LOG, () -> "Discovery Health Check Response: " + dynamicDiscoveryFeedback.getStatus());
           boolean exists = true;
           if (dynamicDiscoveryFeedback.getStatus() != HttpStatus.SC_OK) {
+            infoIf(LOG, () -> "Host " + hostAddress + " doesn't respond from healthcheck after " + serviceHealthCheckTimeout + " ms");
             removeHostAddress(hostAddress);
             exists = false;
           } else {
@@ -799,7 +787,7 @@ public class ZoolServiceMesh {
     announcement.securehost = isSecureHost;
     announcement.token = Optional.ofNullable(existingToken)
         .map(String::getBytes)
-        .orElseGet(() -> getInstanceToken(hostUri));
+        .orElseGet(() -> ZoolSystemUtil.getInstanceToken(hostUri));
 
     final byte[] data = ZoolAnnouncement.serialize(announcement);
     final String servicePath = ZConst.PathSeparator.ZK.join(getZoolReader().getZool().getServiceMapNode(), serviceKey);

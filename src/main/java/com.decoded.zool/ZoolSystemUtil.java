@@ -6,6 +6,7 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ public class ZoolSystemUtil {
    */
   private static final String HTTP_PORT_PROP = "http.port";
   private static final String HTTPS_PORT_PROP = "https.port";
+  private static final int TOKEN_EXPIRY_TIME = 1000 * 60 * 5;
 
   // TODO support turning off HTTP?
   /**
@@ -122,6 +124,17 @@ public class ZoolSystemUtil {
     });
   }
 
+  /**
+   * Generates an instance token for a host uri, and base64 encodes it. A new token value is generated each minute.
+   *
+   * @param hostUri the host uri, e.g. <code>"localhost:9000"</code>
+   *
+   * @return a byte[] for the new token generated.
+   */
+  public static byte[] getInstanceToken(String hostUri) {
+    // generates a new token every 5 minutes
+    return Base64.getEncoder().encode((hostUri + "::" + System.currentTimeMillis() / TOKEN_EXPIRY_TIME).getBytes());
+  }
 
   /**
    * Returns the DNS based identifier for this machine.

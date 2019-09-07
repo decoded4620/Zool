@@ -179,19 +179,20 @@ public class ZoolAnnouncer {
    * @param serviceKey the service key.
    * @param hostUrl    the service host url.
    * @param hostPort   the service host port.
+   * @param isSecure   true if this host is a secure host.
    *
    * @return the token created by gateway service for the announcer.
    */
-  public String stageAnnouncement(String serviceKey, String hostUrl, int hostPort) {
+  public String stageAnnouncement(String serviceKey, String hostUrl, int hostPort, boolean isSecure) {
     infoIf(LOG, () -> "Staging Zool Service Host Announcement for service: " + serviceKey + "@host[" + hostUrl + ":" + hostPort + "]");
     // returns the encoded bucket that your service / host was assigned to.
-    String token = new String(ZoolServiceMesh.getInstanceToken(hostUrl + ':' + hostPort));
+    String token = new String(ZoolSystemUtil.getInstanceToken(hostUrl + ':' + hostPort));
 
     Map<String, ServiceHost> announcements = unprocessedAnnouncements.computeIfAbsent(serviceKey,
         k -> new ConcurrentHashMap<>());
 
     ServiceHost announcement = new ServiceHost();
-    announcement.setHostUrl(hostUrl).setPort(hostPort);
+    announcement.setHostUrl(hostUrl).setPort(hostPort).setSecure(isSecure);
 
     if (announcements.containsKey(token)) {
       LOG.error("Cannot create announcement to " + serviceKey + "@[" + hostUrl + "] with supplied token, its already staged!");

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9,"i1":9,"i2":9,"i3":9,"i4":9,"i5":9};
+var methods = {"i0":9,"i1":9,"i2":9,"i3":9,"i4":9,"i5":9,"i6":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -167,19 +167,25 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code>static byte[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getInstanceToken-java.lang.String-">getInstanceToken</a></span>(java.lang.String&nbsp;hostUri)</code>
+<div class="block">Generates an instance token for a host uri, and base64 encodes it.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrl-boolean-">getLocalHostUrl</a></span>(boolean&nbsp;isProd)</code>
 <div class="block">Returns the host url</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrlAndPort-boolean-boolean-">getLocalHostUrlAndPort</a></span>(boolean&nbsp;isProd,
                       boolean&nbsp;isSecure)</code>
 <div class="block">Returns the DNS based identifier for this machine.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>static boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#isSecure--">isSecure</a></span>()</code>
 <div class="block">Returns true if the host is running on a secure port.</div>
@@ -279,6 +285,22 @@ extends java.lang.Object</pre>
 <dd><code>isProd</code> - boolean flag for production vs. dev</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a String</dd>
+</dl>
+</li>
+</ul>
+<a name="getInstanceToken-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getInstanceToken</h4>
+<pre>public static&nbsp;byte[]&nbsp;getInstanceToken(java.lang.String&nbsp;hostUri)</pre>
+<div class="block">Generates an instance token for a host uri, and base64 encodes it. A new token value is generated each minute.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>hostUri</code> - the host uri, e.g. <code>"localhost:9000"</code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a byte[] for the new token generated.</dd>
 </dl>
 </li>
 </ul>

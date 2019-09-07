@@ -181,9 +181,10 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/decoded/zool/announcer/ZoolAnnouncer.html#stageAnnouncement-java.lang.String-java.lang.String-int-">stageAnnouncement</a></span>(java.lang.String&nbsp;serviceKey,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/decoded/zool/announcer/ZoolAnnouncer.html#stageAnnouncement-java.lang.String-java.lang.String-int-boolean-">stageAnnouncement</a></span>(java.lang.String&nbsp;serviceKey,
                  java.lang.String&nbsp;hostUrl,
-                 int&nbsp;hostPort)</code>
+                 int&nbsp;hostPort,
+                 boolean&nbsp;isSecure)</code>
 <div class="block">Stages an announcement of a service host on the service gateway for a service key.</div>
 </td>
 </tr>
@@ -317,7 +318,7 @@ public&nbsp;ZoolAnnouncer(<a href="../../../../com/decoded/zool/ZoolServiceMesh.
 </dl>
 </li>
 </ul>
-<a name="stageAnnouncement-java.lang.String-java.lang.String-int-">
+<a name="stageAnnouncement-java.lang.String-java.lang.String-int-boolean-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -325,13 +326,15 @@ public&nbsp;ZoolAnnouncer(<a href="../../../../com/decoded/zool/ZoolServiceMesh.
 <h4>stageAnnouncement</h4>
 <pre>public&nbsp;java.lang.String&nbsp;stageAnnouncement(java.lang.String&nbsp;serviceKey,
                                           java.lang.String&nbsp;hostUrl,
-                                          int&nbsp;hostPort)</pre>
+                                          int&nbsp;hostPort,
+                                          boolean&nbsp;isSecure)</pre>
 <div class="block">Stages an announcement of a service host on the service gateway for a service key.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>serviceKey</code> - the service key.</dd>
 <dd><code>hostUrl</code> - the service host url.</dd>
 <dd><code>hostPort</code> - the service host port.</dd>
+<dd><code>isSecure</code> - true if this host is a secure host.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the token created by gateway service for the announcer.</dd>
 </dl>
