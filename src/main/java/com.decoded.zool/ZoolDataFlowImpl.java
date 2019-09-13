@@ -1,5 +1,6 @@
 package com.decoded.zool;
 
+import com.decoded.zool.connection.ZookeeperConnection;
 import com.decoded.zool.dataflow.DataFlowState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -50,9 +51,6 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
   private ZooKeeper zk;
   private Thread dataFlowThread;
-  private String host = "localhost";
-  private int port = 2181;
-  private int timeout = Integer.MAX_VALUE;
 
   private Map<String, ZoolDataBridge> zoolDataBridgeMap = new ConcurrentHashMap<>();
   private Map<String, List<ZoolDataSink>> dataSinkMap = new ConcurrentHashMap<>();
@@ -65,11 +63,17 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
   private String name = ZoolDataFlow.class.getName();
 
   private DataFlowState state = DataFlowState.DISCONNECTED;
-
+  private final ZookeeperConnection zookeeperConnection;
 
   @Inject
-  public ZoolDataFlowImpl(ExecutorService executorService) {
+  public ZoolDataFlowImpl(ZookeeperConnection zookeeperConnection, ExecutorService executorService) {
+    this.zookeeperConnection = zookeeperConnection;
     this.executorService = executorService;
+  }
+
+  @Override
+  public ZookeeperConnection getZookeeperConnection() {
+    return zookeeperConnection;
   }
 
   public DataFlowState getState() {
@@ -108,24 +112,6 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
   @Override
   public String getZNode() {
     return zNode;
-  }
-
-  @Override
-  public ZoolDataFlowImpl setHost(String host) {
-    this.host = host;
-    return this;
-  }
-
-  @Override
-  public ZoolDataFlowImpl setPort(int port) {
-    this.port = port;
-    return this;
-  }
-
-  @Override
-  public ZoolDataFlowImpl setTimeout(int timeout) {
-    this.timeout = timeout;
-    return this;
   }
 
   @Override
@@ -169,8 +155,6 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
    * Add a watch on a specific node.
    *
    * @param dataSink the dataSink to watch
-   *
-   * @return true if watching started.
    */
   @VisibleForTesting
   void watch(ZoolDataSink dataSink) {
@@ -206,8 +190,8 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
   @VisibleForTesting
   ZooKeeper createZookeeper() {
     try {
-      debugIf(LOG, () -> "Creating a Zookeeper on " + host + ":" + port + ", with negotiated timeout " + timeout);
-      return new ZooKeeper(host + ':' + port, timeout, this);
+      debugIf(LOG, () -> "Creating a Zookeeper on " + zookeeperConnection.getZkHostAddress() + ", with negotiated timeout " + zookeeperConnection.getZkConnectTimeout());
+      return new ZooKeeper(zookeeperConnection.getZkHostAddress(), zookeeperConnection.getZkConnectTimeout(), this);
     } catch (IOException ex) {
       LOG.error("Error creating Zookeeper");
       return null;

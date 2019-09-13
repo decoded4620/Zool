@@ -1,6 +1,7 @@
 package com.decoded.zool;
 
 
+import com.decoded.zool.connection.ZookeeperConnection;
 import com.decoded.zool.dataflow.DataFlowState;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
@@ -159,8 +160,6 @@ public class ZoolTest implements WithAssertions {
      */
     private Stubbing stubZoolDataFlow(String zNode, byte[] defaultByteData) {
       // use defaults from mockData
-      mocks.dataFlow.setHost(mockData.zkHost).setPort(mockData.zkPort).setTimeout(mockData.zkTimeout);
-
       doReturn(defaultByteData).when(mocks.dataFlow).get(zNode);
       doReturn(zNode).when(mocks.dataSink).getZNode();
       doReturn(mocks.zooKeeper).when(mocks.dataFlow).createZookeeper();
@@ -215,7 +214,7 @@ public class ZoolTest implements WithAssertions {
     }
 
     private ZoolDataFlowImpl createBasicDataFlow(ExecutorService executorService) {
-      return spy(new ZoolDataFlowImpl(executorService));
+      return spy(new ZoolDataFlowImpl(new ZookeeperConnection(), executorService));
     }
 
     private ZoolDataSink createBasicDataSink() {
@@ -375,9 +374,6 @@ public class ZoolTest implements WithAssertions {
       super(zoolDataFlow);
       cfg = new Cfg();
 
-      setZookeeperHost(cfg.zkHost);
-      setPort(cfg.zkPort);
-      setTimeout(cfg.zkConnectTimeout);
       setServiceMapNode(cfg.zkServiceMapNode);
     }
   }

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -199,42 +199,30 @@ extends org.apache.zookeeper.Watcher, java.lang.Runnable, <a href="../../../com/
 </td>
 </tr>
 <tr id="i8" class="altColor">
+<td class="colFirst"><code><a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlow.html#getZookeeperConnection--">getZookeeperConnection</a></span>()</code>
+<div class="block">Connection details.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlow.html#isConnected--">isConnected</a></span>()</code>
 <div class="block">True if we're connected to a data source</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlow.html#nodeExists-java.lang.String-">nodeExists</a></span>(java.lang.String&nbsp;path)</code>
 <div class="block">Returns true if a node exists</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
-<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlow.html#setHost-java.lang.String-">setHost</a></span>(java.lang.String&nbsp;host)</code>
-<div class="block">Set the Zookeeper host, e.g.</div>
-</td>
-</tr>
 <tr id="i11" class="rowColor">
-<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlow.html#setPort-int-">setPort</a></span>(int&nbsp;port)</code>
-<div class="block">Set the Zookeeper port, e.g.</div>
-</td>
-</tr>
-<tr id="i12" class="altColor">
-<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlow.html#setTimeout-int-">setTimeout</a></span>(int&nbsp;timeout)</code>
-<div class="block">The amount of time to wait on zookeeper reponses before timing out.</div>
-</td>
-</tr>
-<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlow.html#terminate--">terminate</a></span>()</code>
 <div class="block">terminates the data flow connection</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlow.html#update-java.lang.String-byte:A-">update</a></span>(java.lang.String&nbsp;path,
       byte[]&nbsp;data)</code>
@@ -284,54 +272,6 @@ extends org.apache.zookeeper.Watcher, java.lang.Runnable, <a href="../../../com/
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="setHost-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setHost</h4>
-<pre><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a>&nbsp;setHost(java.lang.String&nbsp;host)</pre>
-<div class="block">Set the Zookeeper host, e.g. <code>localhost</code></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>host</code> - the host string</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data flow</dd>
-</dl>
-</li>
-</ul>
-<a name="setPort-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setPort</h4>
-<pre><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a>&nbsp;setPort(int&nbsp;port)</pre>
-<div class="block">Set the Zookeeper port, e.g. <code>2181</code></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>port</code> - the port</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data flow</dd>
-</dl>
-</li>
-</ul>
-<a name="setTimeout-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setTimeout</h4>
-<pre><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a>&nbsp;setTimeout(int&nbsp;timeout)</pre>
-<div class="block">The amount of time to wait on zookeeper reponses before timing out.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>timeout</code> - a int</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data flow.</dd>
-</dl>
-</li>
-</ul>
 <a name="connect--">
 <!--   -->
 </a>
@@ -513,11 +453,25 @@ extends org.apache.zookeeper.Watcher, java.lang.Runnable, <a href="../../../com/
 <a name="terminate--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>terminate</h4>
 <pre>void&nbsp;terminate()</pre>
 <div class="block">terminates the data flow connection</div>
+</li>
+</ul>
+<a name="getZookeeperConnection--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getZookeeperConnection</h4>
+<pre><a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a>&nbsp;getZookeeperConnection()</pre>
+<div class="block">Connection details.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the zookeeper connection</dd>
+</dl>
 </li>
 </ul>
 </li>

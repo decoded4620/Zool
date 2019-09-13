@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -204,70 +204,34 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code>int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getPort--">getPort</a></span>()</code>
-<div class="block">Get the port</div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getServiceMapNode--">getServiceMapNode</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i10" class="altColor">
-<td class="colFirst"><code>int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getTimeout--">getTimeout</a></span>()</code>
-<div class="block">The zookeeper timeout value</div>
-</td>
-</tr>
-<tr id="i11" class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#getZookeeperHost--">getZookeeperHost</a></span>()</code>
-<div class="block">The zookeeper host url</div>
-</td>
-</tr>
-<tr id="i12" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#isConnected--">isConnected</a></span>()</code>
 <div class="block">Returns the connection flag.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#nodeExists-java.lang.String-">nodeExists</a></span>(java.lang.String&nbsp;path)</code>
 <div class="block">True if the node at path already exists</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#removeNode-java.lang.String-">removeNode</a></span>(java.lang.String&nbsp;path)</code>
 <div class="block">Remove a node</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setPort-int-">setPort</a></span>(int&nbsp;port)</code>
-<div class="block">Zookeeper zookeeper Host port</div>
-</td>
-</tr>
-<tr id="i16" class="altColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setServiceMapNode-java.lang.String-">setServiceMapNode</a></span>(java.lang.String&nbsp;serviceMapNode)</code>
 <div class="block">Set the name of the node pertaining to the service map</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setTimeout-int-">setTimeout</a></span>(int&nbsp;timeout)</code>
-<div class="block">Timeout for zk calls.</div>
-</td>
-</tr>
-<tr id="i18" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#setZookeeperHost-java.lang.String-">setZookeeperHost</a></span>(java.lang.String&nbsp;zookeeperHost)</code>
-<div class="block">Set the Zookeeper host url</div>
-</td>
-</tr>
-<tr id="i19" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/Zool.html#updateNode-java.lang.String-byte:A-">updateNode</a></span>(java.lang.String&nbsp;path,
           byte[]&nbsp;data)</code>
@@ -339,90 +303,6 @@ public&nbsp;Zool(<a href="../../../com/decoded/zool/ZoolDataFlow.html" title="in
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>serviceMapNode</code> - the name of the node</dd>
-</dl>
-</li>
-</ul>
-<a name="getZookeeperHost--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getZookeeperHost</h4>
-<pre>public&nbsp;java.lang.String&nbsp;getZookeeperHost()</pre>
-<div class="block">The zookeeper host url</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>the url.</dd>
-</dl>
-</li>
-</ul>
-<a name="setZookeeperHost-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setZookeeperHost</h4>
-<pre>public&nbsp;void&nbsp;setZookeeperHost(java.lang.String&nbsp;zookeeperHost)</pre>
-<div class="block">Set the Zookeeper host url</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>zookeeperHost</code> - the host for zookeeper, e.g. 127.0.0.1</dd>
-</dl>
-</li>
-</ul>
-<a name="getPort--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getPort</h4>
-<pre>public&nbsp;int&nbsp;getPort()</pre>
-<div class="block">Get the port</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>an int</dd>
-</dl>
-</li>
-</ul>
-<a name="setPort-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setPort</h4>
-<pre>public&nbsp;void&nbsp;setPort(int&nbsp;port)</pre>
-<div class="block">Zookeeper zookeeper Host port</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>port</code> - the port.</dd>
-</dl>
-</li>
-</ul>
-<a name="getTimeout--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getTimeout</h4>
-<pre>public&nbsp;int&nbsp;getTimeout()</pre>
-<div class="block">The zookeeper timeout value</div>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>an int</dd>
-</dl>
-</li>
-</ul>
-<a name="setTimeout-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setTimeout</h4>
-<pre>public&nbsp;void&nbsp;setTimeout(int&nbsp;timeout)</pre>
-<div class="block">Timeout for zk calls.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>timeout</code> - the timeout.</dd>
 </dl>
 </li>
 </ul>

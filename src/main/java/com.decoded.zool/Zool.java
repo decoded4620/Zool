@@ -27,9 +27,6 @@ public class Zool {
   // thread safety
   private AtomicBoolean connected = new AtomicBoolean(false);
 
-  private String zookeeperHost = "localhost";
-  private int port = 2181;
-  private int timeout = 10000;
   private String serviceMapNode;
 
   /**
@@ -56,60 +53,6 @@ public class Zool {
   }
 
   /**
-   * The zookeeper host url
-   *
-   * @return the url.
-   */
-  public String getZookeeperHost() {
-    return zookeeperHost;
-  }
-
-  /**
-   * Set the Zookeeper host url
-   *
-   * @param zookeeperHost the host for zookeeper, e.g. 127.0.0.1
-   */
-  public void setZookeeperHost(String zookeeperHost) {
-    this.zookeeperHost = zookeeperHost;
-  }
-
-  /**
-   * Get the port
-   *
-   * @return an int
-   */
-  public int getPort() {
-    return port;
-  }
-
-  /**
-   * Zookeeper zookeeper Host port
-   *
-   * @param port the port.
-   */
-  public void setPort(int port) {
-    this.port = port;
-  }
-
-  /**
-   * The zookeeper timeout value
-   *
-   * @return an int
-   */
-  public int getTimeout() {
-    return timeout;
-  }
-
-  /**
-   * Timeout for zk calls.
-   *
-   * @param timeout the timeout.
-   */
-  public void setTimeout(int timeout) {
-    this.timeout = timeout;
-  }
-
-  /**
    * Get Children nodes at a specific path.
    *
    * @param path  the path
@@ -126,14 +69,12 @@ public class Zool {
    */
   public void connect() {
     if (!connected.get()) {
-      infoIf(LOG, () -> "connecting to ZooKeeper on " + zookeeperHost + ":" + port + ", timeout: " + timeout);
-      connected.set(true);
-
-      // set the zookeeperHost port and timeout for the main zool data flow.
-      this.zoolDataFlow.setHost(zookeeperHost).setPort(port).setTimeout(timeout);
+      infoIf(LOG, () -> "connecting to ZooKeeper on " + zoolDataFlow.getZookeeperConnection().getZkHostAddress() + ", timeout: " + zoolDataFlow.getZookeeperConnection().getZkConnectTimeout());
 
       // run the zoolDataFlow in its own thread.
       zoolDataFlow.connect();
+
+      connected.set(true);
     } else {
       LOG.info("Zool is Already Connected!");
     }
@@ -144,7 +85,7 @@ public class Zool {
    */
   public void disconnect() {
     if (connected.get()) {
-      infoIf(LOG, () -> "disconnecting from ZooKeeper on " + zookeeperHost + ":" + port);
+      infoIf(LOG, () -> "disconnecting from ZooKeeper on " + zoolDataFlow.getZookeeperConnection().getZkHostAddress());
       zoolDataFlow.terminate();
       connected.set(false);
     } else {
@@ -169,7 +110,7 @@ public class Zool {
    * @return a boolean, true if the path was either removed, or didn't exist to begin with.
    */
   public boolean removeNode(String path) {
-    infoIf(LOG, () -> "Deleting ZK Node " + zookeeperHost + ":" + port + " - " + path);
+    infoIf(LOG, () -> "Deleting ZK Node " + zoolDataFlow.getZookeeperConnection().getZkHostAddress() + " - " + path);
     return zoolDataFlow.delete(path);
   }
 
@@ -184,9 +125,11 @@ public class Zool {
    * @return true if the node was created.
    */
   public boolean createNode(String path, byte[] data, ArrayList<ACL> acls, CreateMode mode) {
-    LOG.info(Thread.currentThread()
-        .getName() + ":Creating ZK Node " + zookeeperHost + ":" + port + " - " + path + " with " + data.length + " " + "bytes [" + mode
-        .name() + "]");
+    infoIf(LOG, () -> Thread.currentThread().getName() + ":Creating ZK Node "
+        + zoolDataFlow.getZookeeperConnection().getZkHostAddress()
+        + " - " + path + " with " + data.length
+        + " " + "bytes [" + mode.name() + "]");
+
     return zoolDataFlow.create(path, data, acls, mode);
   }
 

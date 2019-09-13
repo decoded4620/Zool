@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -165,7 +165,8 @@ implements <a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interfac
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#ZoolDataFlowImpl-java.util.concurrent.ExecutorService-">ZoolDataFlowImpl</a></span>(java.util.concurrent.ExecutorService&nbsp;executorService)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#ZoolDataFlowImpl-com.decoded.zool.connection.ZookeeperConnection-java.util.concurrent.ExecutorService-">ZoolDataFlowImpl</a></span>(<a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a>&nbsp;zookeeperConnection,
+                java.util.concurrent.ExecutorService&nbsp;executorService)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -260,86 +261,86 @@ implements <a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interfac
 </td>
 </tr>
 <tr id="i12" class="altColor">
+<td class="colFirst"><code><a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#getZookeeperConnection--">getZookeeperConnection</a></span>()</code>
+<div class="block">Connection details.</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#isConnected--">isConnected</a></span>()</code>
 <div class="block">True if we're connected to a data source</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#isDisconnectingAfterLoadComplete--">isDisconnectingAfterLoadComplete</a></span>()</code>
 <div class="block">If true, this data sink should be disconnected after it receives and processes data and children</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#isReadChildren--">isReadChildren</a></span>()</code>
 <div class="block">Read Children Nodes and watch for result updates</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#nodeExists-java.lang.String-">nodeExists</a></span>(java.lang.String&nbsp;path)</code>
 <div class="block">Returns true if a node exists</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#onChildren-java.lang.String-java.util.List-">onChildren</a></span>(java.lang.String&nbsp;zNode,
           java.util.List&lt;java.lang.String&gt;&nbsp;childNodes)</code>
 <div class="block">When reading children, this will handle child node name updates.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#onData-java.lang.String-byte:A-">onData</a></span>(java.lang.String&nbsp;zNode,
       byte[]&nbsp;data)</code>
 <div class="block">The main drain method.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#onDataNotExists-java.lang.String-">onDataNotExists</a></span>(java.lang.String&nbsp;zNode)</code>
 <div class="block">Invoked when there is no data at the specified zNode.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#onLoadComplete-java.lang.String-">onLoadComplete</a></span>(java.lang.String&nbsp;zNode)</code>
 <div class="block">Completion of loading cycle</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#onNoChildren-java.lang.String-">onNoChildren</a></span>(java.lang.String&nbsp;zNode)</code>
 <div class="block">When no children are found on the path</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#onZoolSessionInvalid-org.apache.zookeeper.KeeperException.Code-java.lang.String-">onZoolSessionInvalid</a></span>(org.apache.zookeeper.KeeperException.Code&nbsp;rc,
                     java.lang.String&nbsp;nodePath)</code>
 <div class="block">The Zool zookeeper session is no longer valid.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#process-org.apache.zookeeper.WatchedEvent-">process</a></span>(org.apache.zookeeper.WatchedEvent&nbsp;event)</code>&nbsp;</td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#run--">run</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#setChildNodesHandler-java.util.function.BiConsumer-">setChildNodesHandler</a></span>(java.util.function.BiConsumer&lt;java.lang.String,java.util.List&lt;java.lang.String&gt;&gt;&nbsp;childNodesHandler)</code>
 <div class="block">Set the handler for child node information</div>
-</td>
-</tr>
-<tr id="i25" class="rowColor">
-<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#setHost-java.lang.String-">setHost</a></span>(java.lang.String&nbsp;host)</code>
-<div class="block">Set the Zookeeper host, e.g.</div>
 </td>
 </tr>
 <tr id="i26" class="altColor">
@@ -349,30 +350,18 @@ implements <a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interfac
 </td>
 </tr>
 <tr id="i27" class="rowColor">
-<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#setPort-int-">setPort</a></span>(int&nbsp;port)</code>
-<div class="block">Set the Zookeeper port, e.g.</div>
-</td>
-</tr>
-<tr id="i28" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataSinkImpl.html" title="class in com.decoded.zool">ZoolDataSinkImpl</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#setReadChildren-boolean-">setReadChildren</a></span>(boolean&nbsp;readChildren)</code>
 <div class="block">Read Children Nodes and watch for result updates</div>
 </td>
 </tr>
-<tr id="i29" class="rowColor">
-<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#setTimeout-int-">setTimeout</a></span>(int&nbsp;timeout)</code>
-<div class="block">The amount of time to wait on zookeeper reponses before timing out.</div>
-</td>
-</tr>
-<tr id="i30" class="altColor">
+<tr id="i28" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#terminate--">terminate</a></span>()</code>
 <div class="block">terminates the data flow connection</div>
 </td>
 </tr>
-<tr id="i31" class="rowColor">
+<tr id="i29" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolDataFlowImpl.html#update-java.lang.String-byte:A-">update</a></span>(java.lang.String&nbsp;path,
       byte[]&nbsp;data)</code>
@@ -401,14 +390,15 @@ implements <a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interfac
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ZoolDataFlowImpl-java.util.concurrent.ExecutorService-">
+<a name="ZoolDataFlowImpl-com.decoded.zool.connection.ZookeeperConnection-java.util.concurrent.ExecutorService-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ZoolDataFlowImpl</h4>
 <pre>@Inject
-public&nbsp;ZoolDataFlowImpl(java.util.concurrent.ExecutorService&nbsp;executorService)</pre>
+public&nbsp;ZoolDataFlowImpl(<a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a>&nbsp;zookeeperConnection,
+                                 java.util.concurrent.ExecutorService&nbsp;executorService)</pre>
 </li>
 </ul>
 </li>
@@ -419,6 +409,23 @@ public&nbsp;ZoolDataFlowImpl(java.util.concurrent.ExecutorService&nbsp;executorS
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getZookeeperConnection--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getZookeeperConnection</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a>&nbsp;getZookeeperConnection()</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataFlow.html#getZookeeperConnection--">ZoolDataFlow</a></code></span></div>
+<div class="block">Connection details.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../com/decoded/zool/ZoolDataFlow.html#getZookeeperConnection--">getZookeeperConnection</a></code>&nbsp;in interface&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>the zookeeper connection</dd>
+</dl>
+</li>
+</ul>
 <a name="getState--">
 <!--   -->
 </a>
@@ -529,63 +536,6 @@ public&nbsp;ZoolDataFlowImpl(java.util.concurrent.ExecutorService&nbsp;executorS
 <dd><code><a href="../../../com/decoded/zool/ZoolDataSink.html#getZNode--">getZNode</a></code>&nbsp;in interface&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataSink.html" title="interface in com.decoded.zool">ZoolDataSink</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a String.</dd>
-</dl>
-</li>
-</ul>
-<a name="setHost-java.lang.String-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setHost</h4>
-<pre>public&nbsp;<a href="../../../com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a>&nbsp;setHost(java.lang.String&nbsp;host)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataFlow.html#setHost-java.lang.String-">ZoolDataFlow</a></code></span></div>
-<div class="block">Set the Zookeeper host, e.g. <code>localhost</code></div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../../com/decoded/zool/ZoolDataFlow.html#setHost-java.lang.String-">setHost</a></code>&nbsp;in interface&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></code></dd>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>host</code> - the host string</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data flow</dd>
-</dl>
-</li>
-</ul>
-<a name="setPort-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setPort</h4>
-<pre>public&nbsp;<a href="../../../com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a>&nbsp;setPort(int&nbsp;port)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataFlow.html#setPort-int-">ZoolDataFlow</a></code></span></div>
-<div class="block">Set the Zookeeper port, e.g. <code>2181</code></div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../../com/decoded/zool/ZoolDataFlow.html#setPort-int-">setPort</a></code>&nbsp;in interface&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></code></dd>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>port</code> - the port</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data flow</dd>
-</dl>
-</li>
-</ul>
-<a name="setTimeout-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setTimeout</h4>
-<pre>public&nbsp;<a href="../../../com/decoded/zool/ZoolDataFlowImpl.html" title="class in com.decoded.zool">ZoolDataFlowImpl</a>&nbsp;setTimeout(int&nbsp;timeout)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataFlow.html#setTimeout-int-">ZoolDataFlow</a></code></span></div>
-<div class="block">The amount of time to wait on zookeeper reponses before timing out.</div>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../../com/decoded/zool/ZoolDataFlow.html#setTimeout-int-">setTimeout</a></code>&nbsp;in interface&nbsp;<code><a href="../../../com/decoded/zool/ZoolDataFlow.html" title="interface in com.decoded.zool">ZoolDataFlow</a></code></dd>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>timeout</code> - a int</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this data flow.</dd>
 </dl>
 </li>
 </ul>

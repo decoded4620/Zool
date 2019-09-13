@@ -1,5 +1,6 @@
 package com.decoded.zool;
 
+import com.decoded.zool.connection.ZookeeperConnection;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.ACL;
@@ -14,35 +15,6 @@ import java.util.function.BiConsumer;
 public interface ZoolDataFlow extends Watcher,
     Runnable,
     ZoolWatcher {
-
-
-  /**
-   * Set the Zookeeper host, e.g. <code>localhost</code>
-   *
-   * @param host the host string
-   *
-   * @return this data flow
-   */
-  ZoolDataFlow setHost(String host);
-
-  /**
-   * Set the Zookeeper port, e.g. <code>2181</code>
-   *
-   * @param port the port
-   *
-   * @return this data flow
-   */
-  ZoolDataFlow setPort(int port);
-
-  /**
-   * The amount of time to wait on zookeeper reponses before timing out.
-   *
-   * @param timeout a int
-   *
-   * @return this data flow.
-   */
-  ZoolDataFlow setTimeout(int timeout);
-
   /**
    * Connect to the host / port set for this data flow.
    */
@@ -142,4 +114,10 @@ public interface ZoolDataFlow extends Watcher,
    * terminates the data flow connection
    */
   void terminate();
+
+  /**
+   * Connection details.
+   * @return the zookeeper connection
+   */
+  ZookeeperConnection getZookeeperConnection();
 }
