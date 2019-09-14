@@ -180,8 +180,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrlAndPort-boolean-boolean-">getLocalHostUrlAndPort</a></span>(boolean&nbsp;isProd,
-                      boolean&nbsp;isSecure)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolSystemUtil.html#getLocalHostUrlAndPort-boolean-boolean-com.decoded.zool.ZoolConfig-">getLocalHostUrlAndPort</a></span>(boolean&nbsp;isProd,
+                      boolean&nbsp;isSecure,
+                      <a href="../../../com/decoded/zool/ZoolConfig.html" title="class in com.decoded.zool">ZoolConfig</a>&nbsp;zoolConfig)</code>
 <div class="block">Returns the DNS based identifier for this machine.</div>
 </td>
 </tr>
@@ -304,19 +305,21 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getLocalHostUrlAndPort-boolean-boolean-">
+<a name="getLocalHostUrlAndPort-boolean-boolean-com.decoded.zool.ZoolConfig-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getLocalHostUrlAndPort</h4>
 <pre>public static&nbsp;java.lang.String&nbsp;getLocalHostUrlAndPort(boolean&nbsp;isProd,
-                                                      boolean&nbsp;isSecure)</pre>
+                                                      boolean&nbsp;isSecure,
+                                                      <a href="../../../com/decoded/zool/ZoolConfig.html" title="class in com.decoded.zool">ZoolConfig</a>&nbsp;zoolConfig)</pre>
 <div class="block">Returns the DNS based identifier for this machine.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>isProd</code> - boolean</dd>
 <dd><code>isSecure</code> - true if this is a secure host.</dd>
+<dd><code>zoolConfig</code> - the current configuration being used with our zool connection</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a String that uniquely identifies this host in the service key cluster on zookeeper.</dd>
 </dl>

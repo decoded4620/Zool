@@ -124,7 +124,7 @@ public class ZoolAnnouncer {
 
     fastMap.forEach((serviceName, serviceHostMap) -> serviceHostMap.forEach(
         (serviceToken, serviceHost) -> zoolServiceMesh.announceServiceHost(serviceName,
-            serviceHost.getHostUrl() + ':' + serviceHost.getPort(), serviceHost.isSecure(), serviceToken)));
+            serviceHost.getFullUrl(), serviceHost.isSecure(), serviceToken)));
 
     processorEnqueued = false;
   }
@@ -149,7 +149,7 @@ public class ZoolAnnouncer {
         zoolServiceMesh.getMeshNetwork().forEach((k, x) -> {
           if (k.equals(serviceKey)) {
             List<ServiceHost> hosts = getHosts(k).stream()
-                .filter(sh -> !remoteHostUrl.equals(sh.getHostUrl() + ':' + sh.getPort()))
+                .filter(sh -> !remoteHostUrl.equals(sh.getFullUrl()))
                 .collect(Collectors.toList());
 
             services.put(k, new ServiceGateway().setServiceKey(serviceKey).setHosts(hosts));
@@ -184,22 +184,19 @@ public class ZoolAnnouncer {
    * @return the token created by gateway service for the announcer.
    */
   public String stageAnnouncement(String serviceKey, String hostUrl, int hostPort, boolean isSecure) {
-    infoIf(LOG, () -> "Staging Zool Service Host Announcement for service: " + serviceKey + "@host[" + hostUrl + ":" + hostPort + "]");
     // returns the encoded bucket that your service / host was assigned to.
-    String token = new String(ZoolSystemUtil.getInstanceToken(hostUrl + ':' + hostPort));
-
     Map<String, ServiceHost> announcements = unprocessedAnnouncements.computeIfAbsent(serviceKey,
         k -> new ConcurrentHashMap<>());
-
     ServiceHost announcement = new ServiceHost();
     announcement.setHostUrl(hostUrl).setPort(hostPort).setSecure(isSecure);
+    infoIf(LOG, () -> "Staging Zool Service Host Announcement for service: " + serviceKey + "@host[" + announcement.getFullUrl() + "]");
+    String token = new String(ZoolSystemUtil.getInstanceToken(announcement.getFullUrl()));
 
     if (announcements.containsKey(token)) {
-      LOG.error("Cannot create announcement to " + serviceKey + "@[" + hostUrl + "] with supplied token, its already staged!");
+      LOG.error("Cannot create announcement to " + serviceKey + "@[" + announcement.getFullUrl() + "] with supplied token, its already staged!");
     } else {
       // add any hosts that have announced, but not yet been processed.
       announcements.put(token, announcement);
-
       scheduleAnnouncementQueueProcessor();
     }
     return token;
@@ -233,11 +230,12 @@ public class ZoolAnnouncer {
       ZoolAnnouncement announcement = hostsForService.get(host);
       ServiceHost serviceHost = new ServiceHost().setToken(new String(announcement.token))
           .setSecure(announcement.securehost);
-      int idx = host.indexOf(':');
+      int idx = host.indexOf(":");
       if (idx > -1) {
         return serviceHost.setHostUrl(host.substring(0, idx)).setPort(Integer.valueOf(host.substring(idx + 1)));
       } else {
-        return new ServiceHost().setPort(80).setHostUrl(host);
+        // set port to -1 (which means no port, which means either 80 or 443 depending on protocol)
+        return serviceHost.setPort(-1).setHostUrl(host);
       }
     }).collect(Collectors.toList());
   }

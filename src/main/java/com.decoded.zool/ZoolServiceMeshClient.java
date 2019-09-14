@@ -1,17 +1,19 @@
 package com.decoded.zool;
 
 import com.decoded.javautil.Pair;
-import com.google.common.collect.ImmutableList;
+import com.decoded.zool.connection.ZookeeperConnection;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -30,18 +32,33 @@ public abstract class ZoolServiceMeshClient {
   private String zoolGatewayKey = "";
   private boolean announced = false;
   private boolean gatewayConnected = false;
+  private ZoolConfig zoolConfig;
 
   // map of host indexes (for predictable load balancing)
   private boolean isProd;
 
-  private ExecutorService executorService = Executors.newSingleThreadExecutor();
+  private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+  private final ZookeeperConnection zookeeperConnection;
+
   /**
    * Constructor
    *
+   * @param zoolConfig a zool configuration
+   * @param zookeeperConnection a zookeeper connection
    * @param zoolReader a Zool reader.
    */
-  public ZoolServiceMeshClient(ZoolReader zoolReader) {
+  public ZoolServiceMeshClient(ZoolConfig zoolConfig, ZookeeperConnection zookeeperConnection, ZoolReader zoolReader) {
+    this.zoolConfig = zoolConfig;
     this.zoolReader = zoolReader;
+    this.zookeeperConnection = zookeeperConnection;
+  }
+
+  public ZoolConfig getZoolConfig() {
+    return zoolConfig;
+  }
+
+  public ZookeeperConnection getZookeeperConnection() {
+    return zookeeperConnection;
   }
 
   /**
@@ -54,7 +71,20 @@ public abstract class ZoolServiceMeshClient {
   }
 
   /**
+   * Set the announcement flag.
+   *
+   * @param announced true if we are announced
+   *
+   * @return this client
+   */
+  protected ZoolServiceMeshClient setAnnounced(boolean announced) {
+    this.announced = announced;
+    return this;
+  }
+
+  /**
    * returns true if the gateway is connected (e.g. we know about gateway hosts for announcement)
+   *
    * @return a boolean
    */
   public boolean isGatewayConnected() {
@@ -79,16 +109,6 @@ public abstract class ZoolServiceMeshClient {
    */
   public ZoolServiceMeshClient setProd(final boolean prod) {
     isProd = prod;
-    return this;
-  }
-
-  /**
-   * Set the announcement flag.
-   * @param announced true if we are announced
-   * @return this client
-   */
-  protected ZoolServiceMeshClient setAnnounced(boolean announced) {
-    this.announced = announced;
     return this;
   }
 
@@ -142,11 +162,13 @@ public abstract class ZoolServiceMeshClient {
     } else {
       final Map<String, ZoolAnnouncement> hostsForMyService = zoolServiceMesh.get(getZoolServiceKey());
       // return true if our host is known on the service mesh.
-      isDiscoverable = hostsForMyService != null && hostsForMyService.keySet().stream()
-          .anyMatch(key -> key
-              .equals(ZoolSystemUtil.getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure())));
+      isDiscoverable = hostsForMyService != null && hostsForMyService.keySet()
+          .stream()
+          .anyMatch(key -> key.equals(
+              ZoolSystemUtil.getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure(), zoolConfig)));
 
-      LOG.info("My service exists at: " + getZoolServiceKey() + ", is my host visible to Discovery Services? " + isDiscoverable);
+      LOG.info(
+          "My service exists at: " + getZoolServiceKey() + ", is my host visible to Discovery Services? " + isDiscoverable);
     }
     return isDiscoverable;
   }
@@ -261,12 +283,14 @@ public abstract class ZoolServiceMeshClient {
 
   /**
    * Connect to zookeeper server
+   *
    * @return this client.
    */
   public ZoolServiceMeshClient connect() {
     zoolReader.getZool().connect();
     return this;
   }
+
   /**
    * Initializes the client gateway knowledge. This will connect directly to zookeeper and get the gateway hosts.
    *
@@ -295,17 +319,15 @@ public abstract class ZoolServiceMeshClient {
         hosts.forEach(host -> {
           final String servicePath = ZConst.PathSeparator.ZK.join(gatewayPath, host);
           LOG.info("Reading child data from: " + servicePath);
-          zoolReader.readChannel(
-              servicePath,
-              (channelKey, data) -> {
-                LOG.info("Got data for channel key: " + channelKey + " data: " + data.length);
-                ZoolAnnouncement announcement = ZoolAnnouncement.deserialize(data);
-                newGatewayHosts.put(host, announcement);
-                latch.countDown();
-              }, hostNoData -> {
-                LOG.warn("Host: " + hostNoData + " had no data");
-                latch.countDown();
-              });
+          zoolReader.readChannel(servicePath, (channelKey, data) -> {
+            LOG.info("Got data for channel key: " + channelKey + " data: " + data.length);
+            ZoolAnnouncement announcement = ZoolAnnouncement.deserialize(data);
+            newGatewayHosts.put(host, announcement);
+            latch.countDown();
+          }, hostNoData -> {
+            LOG.warn("Host: " + hostNoData + " had no data");
+            latch.countDown();
+          });
         });
 
         boolean awaitSuccess;
@@ -313,7 +335,9 @@ public abstract class ZoolServiceMeshClient {
           awaitSuccess = latch.await(20000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
           awaitSuccess = false;
-          LOG.warn("Interrupted while waiting... only loaded " + newGatewayHosts.size() + " hosts of " + hosts.size() + " hosts");
+          LOG.warn(
+              "Interrupted while waiting... only loaded " + newGatewayHosts.size() + " hosts of " + hosts.size() + " " +
+                  "hosts");
         }
 
         if (!awaitSuccess) {
@@ -322,7 +346,7 @@ public abstract class ZoolServiceMeshClient {
 
         gatewayHosts = ImmutableMap.copyOf(newGatewayHosts);
         // wait for at least one host.
-        if(!gatewayHosts.isEmpty()) {
+        if (!gatewayHosts.isEmpty()) {
           LOG.info("Gateway Hosts received for " + p + " , " + hosts.size());
           gatewayConnected = true;
           serviceMeshFuture.complete(gatewayHosts);
@@ -331,7 +355,7 @@ public abstract class ZoolServiceMeshClient {
           // the future should wait
         }
       });
-//      sinks.forEach(zoolReader.getZool()::drainStop);
+      //      sinks.forEach(zoolReader.getZool()::drainStop);
     }, p -> {
       LOG.warn("No Gateway Service announced on zookeeper: " + p + " waiting for announcement...");
       // the future should wait
@@ -381,7 +405,7 @@ public abstract class ZoolServiceMeshClient {
    */
   public Pair<String, ZoolAnnouncement> getNextServiceHost(String serviceKey) {
     // clients should not have to supply the service map node
-    return ZoolServiceMesh.getNextHostFromHostAnnouncementList(hostIdxMap.computeIfAbsent(serviceKey, sk -> new AtomicLong(0)),
-        getServiceHosts(serviceKey));
+    return ZoolServiceMesh.getNextHostFromHostAnnouncementList(
+        hostIdxMap.computeIfAbsent(serviceKey, sk -> new AtomicLong(0)), getServiceHosts(serviceKey));
   }
 }

@@ -30,9 +30,9 @@ public class HostAddress {
     this.serviceKey = serviceKey;
     this.hostZkNode = ZConst.PathSeparator.ZK.join(this.serviceMapNode, this.serviceKey, remoteHostUrl);
 
-    final int portIdx = remoteHostUrl.indexOf(':');
-    this.host = remoteHostUrl.substring(0, portIdx);
-    this.port = Integer.valueOf(remoteHostUrl.substring(portIdx + 1));
+    final int portIdx = remoteHostUrl.indexOf(":");
+    this.host = portIdx > -1 ? remoteHostUrl.substring(0, portIdx) : remoteHostUrl;
+    this.port = portIdx > -1 ? Integer.valueOf(remoteHostUrl.substring(portIdx + 1)) : portIdx;
   }
 
   /**

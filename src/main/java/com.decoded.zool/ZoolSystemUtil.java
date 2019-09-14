@@ -141,15 +141,24 @@ public class ZoolSystemUtil {
    *
    * @param isProd   boolean
    * @param isSecure true if this is a secure host.
-   *
+   * @param zoolConfig the current configuration being used with our zool connection
    * @return a String that uniquely identifies this host in the service key cluster on zookeeper.
    */
-  public static String getLocalHostUrlAndPort(boolean isProd, boolean isSecure) {
+  public static String getLocalHostUrlAndPort(boolean isProd, boolean isSecure, ZoolConfig zoolConfig) {
     // You must set the environment variable denoted in EnvironmentConstants
     // for both dev and prod PUB DNS to run the container application.
     return Optional.ofNullable(
         getenv(isProd ? EnvironmentConstants.PROD_SERVER_DNS : EnvironmentConstants.DEV_SERVER_DNS))
-        .map(value -> value + ':' + getCurrentPort(isSecure))
+        .map(value -> {
+          if(zoolConfig.usengrok) {
+            if (value.endsWith("ngrok.io")) {
+              // special case ONLY for ngrok (because it means we're hiding the port information
+              return value;
+            }
+          }
+
+          return value + ":" + getCurrentPort(isSecure);
+        })
         .orElseGet(() -> {
           LOG.error(
               "Environment Expected to have " + EnvironmentConstants.PROD_SERVER_DNS + ", and " + EnvironmentConstants.DEV_SERVER_DNS + " keys");

@@ -58,6 +58,11 @@ public class ServiceHost {
     return token;
   }
 
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public String getFullUrl() {
+    return hostUrl + (port > -1 ? ":" + port : "");
+  }
+
   @Override
   public String toString() {
     return new ToStringBuilder(this).append("hostUrl", hostUrl)

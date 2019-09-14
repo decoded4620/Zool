@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -130,7 +130,9 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#ZoolServiceMeshClient-com.decoded.zool.ZoolReader-">ZoolServiceMeshClient</a></span>(<a href="../../../com/decoded/zool/ZoolReader.html" title="class in com.decoded.zool">ZoolReader</a>&nbsp;zoolReader)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#ZoolServiceMeshClient-com.decoded.zool.ZoolConfig-com.decoded.zool.connection.ZookeeperConnection-com.decoded.zool.ZoolReader-">ZoolServiceMeshClient</a></span>(<a href="../../../com/decoded/zool/ZoolConfig.html" title="class in com.decoded.zool">ZoolConfig</a>&nbsp;zoolConfig,
+                     <a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a>&nbsp;zookeeperConnection,
+                     <a href="../../../com/decoded/zool/ZoolReader.html" title="class in com.decoded.zool">ZoolReader</a>&nbsp;zoolReader)</code>
 <div class="block">Constructor</div>
 </td>
 </tr>
@@ -210,85 +212,93 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i10" class="altColor">
+<td class="colFirst"><code><a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getZookeeperConnection--">getZookeeperConnection</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolConfig.html" title="class in com.decoded.zool">ZoolConfig</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getZoolConfig--">getZoolConfig</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getZoolGatewayKey--">getZoolGatewayKey</a></span>()</code>
 <div class="block">the Zool gateway key (which contains gateway hosts).</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getZoolServiceKey--">getZoolServiceKey</a></span>()</code>
 <div class="block">Returns this clients service key.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#getZoolServiceMesh--">getZoolServiceMesh</a></span>()</code>
 <div class="block">Returns a copy of the service mesh.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#ignoreHost-java.lang.String-java.lang.String-">ignoreHost</a></span>(java.lang.String&nbsp;serviceKey,
           java.lang.String&nbsp;hostUrl)</code>
 <div class="block">Ignore a single host from a client perspective.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#isAnnounced--">isAnnounced</a></span>()</code>
 <div class="block">Returns <code>true</code> if this client is announced on the network, and has knowledge of the other hosts.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#isGatewayConnected--">isGatewayConnected</a></span>()</code>
 <div class="block">returns true if the gateway is connected (e.g.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>protected boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#isMyHostDiscoverable--">isMyHostDiscoverable</a></span>()</code>
 <div class="block">Returns <code>true</code> if the current zool service mesh contains our host</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#isProd--">isProd</a></span>()</code>
 <div class="block">Returns <code>true</code> if this is a prod client.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>protected <a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#setAnnounced-boolean-">setAnnounced</a></span>(boolean&nbsp;announced)</code>
 <div class="block">Set the announcement flag.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#setProd-boolean-">setProd</a></span>(boolean&nbsp;prod)</code>
 <div class="block">Set the production (vs development) flag.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i22" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#setZoolGatewayKey-java.lang.String-">setZoolGatewayKey</a></span>(java.lang.String&nbsp;zoolGatewayKey)</code>
 <div class="block">Change the zool gateway key to point to a custom dynamic discovery service.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#setZoolServiceKey-java.lang.String-">setZoolServiceKey</a></span>(java.lang.String&nbsp;zoolServiceKey)</code>
 <div class="block">Change the service key for this client.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#updateServiceMesh-java.util.Map-">updateServiceMesh</a></span>(java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;&nbsp;freshMesh)</code>
 <div class="block">Update the service mesh without option to reannounce</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>&lt;X&gt;&nbsp;java.util.concurrent.CompletableFuture&lt;X&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/zool/ZoolServiceMeshClient.html#updateServiceMesh-java.util.Map-java.util.function.Function-">updateServiceMesh</a></span>(java.util.Map&lt;java.lang.String,java.util.Map&lt;java.lang.String,<a href="../../../com/decoded/zool/ZoolAnnouncement.html" title="class in com.decoded.zool">ZoolAnnouncement</a>&gt;&gt;&nbsp;freshMesh,
                  java.util.function.Function&lt;java.lang.Boolean,java.util.concurrent.CompletableFuture&lt;X&gt;&gt;&nbsp;announcer)</code>
@@ -317,16 +327,20 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ZoolServiceMeshClient-com.decoded.zool.ZoolReader-">
+<a name="ZoolServiceMeshClient-com.decoded.zool.ZoolConfig-com.decoded.zool.connection.ZookeeperConnection-com.decoded.zool.ZoolReader-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ZoolServiceMeshClient</h4>
-<pre>public&nbsp;ZoolServiceMeshClient(<a href="../../../com/decoded/zool/ZoolReader.html" title="class in com.decoded.zool">ZoolReader</a>&nbsp;zoolReader)</pre>
+<pre>public&nbsp;ZoolServiceMeshClient(<a href="../../../com/decoded/zool/ZoolConfig.html" title="class in com.decoded.zool">ZoolConfig</a>&nbsp;zoolConfig,
+                             <a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a>&nbsp;zookeeperConnection,
+                             <a href="../../../com/decoded/zool/ZoolReader.html" title="class in com.decoded.zool">ZoolReader</a>&nbsp;zoolReader)</pre>
 <div class="block">Constructor</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>zoolConfig</code> - a zool configuration</dd>
+<dd><code>zookeeperConnection</code> - a zookeeper connection</dd>
 <dd><code>zoolReader</code> - a Zool reader.</dd>
 </dl>
 </li>
@@ -339,6 +353,24 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getZoolConfig--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getZoolConfig</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/zool/ZoolConfig.html" title="class in com.decoded.zool">ZoolConfig</a>&nbsp;getZoolConfig()</pre>
+</li>
+</ul>
+<a name="getZookeeperConnection--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getZookeeperConnection</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/zool/connection/ZookeeperConnection.html" title="class in com.decoded.zool.connection">ZookeeperConnection</a>&nbsp;getZookeeperConnection()</pre>
+</li>
+</ul>
 <a name="isAnnounced--">
 <!--   -->
 </a>
@@ -350,6 +382,22 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a boolean.</dd>
+</dl>
+</li>
+</ul>
+<a name="setAnnounced-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setAnnounced</h4>
+<pre>protected&nbsp;<a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a>&nbsp;setAnnounced(boolean&nbsp;announced)</pre>
+<div class="block">Set the announcement flag.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>announced</code> - true if we are announced</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this client</dd>
 </dl>
 </li>
 </ul>
@@ -394,22 +442,6 @@ extends java.lang.Object</pre>
 <dd><code>prod</code> - the prod flag, false for dev</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the client.</dd>
-</dl>
-</li>
-</ul>
-<a name="setAnnounced-boolean-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setAnnounced</h4>
-<pre>protected&nbsp;<a href="../../../com/decoded/zool/ZoolServiceMeshClient.html" title="class in com.decoded.zool">ZoolServiceMeshClient</a>&nbsp;setAnnounced(boolean&nbsp;announced)</pre>
-<div class="block">Set the announcement flag.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>announced</code> - true if we are announced</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>this client</dd>
 </dl>
 </li>
 </ul>

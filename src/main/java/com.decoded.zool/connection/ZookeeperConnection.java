@@ -9,7 +9,7 @@ import com.google.inject.Inject;
 public class ZookeeperConnection {
   private int zkConnectTimeout = -1;
   private String zkHost = null;
-  private int zkPort = 0;
+  private int zkPort = -1;
   private String zkServiceMapNode = null;
 
   @Inject
@@ -45,7 +45,7 @@ public class ZookeeperConnection {
   }
 
   public String getZkHostAddress() {
-    return zkHost + ':' + zkPort;
+    return zkHost + (zkPort > -1 ? ":" + zkPort : "");
   }
   public ZookeeperConnection setZkServiceMapNode(final String zkServiceMapNode) {
     this.zkServiceMapNode = zkServiceMapNode;
