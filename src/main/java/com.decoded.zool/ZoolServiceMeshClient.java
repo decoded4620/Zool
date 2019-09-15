@@ -332,7 +332,7 @@ public abstract class ZoolServiceMeshClient {
 
         boolean awaitSuccess;
         try {
-          awaitSuccess = latch.await(20000, TimeUnit.MILLISECONDS);
+          awaitSuccess = latch.await(zookeeperConnection.getZkConnectTimeout() * hosts.size(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
           awaitSuccess = false;
           LOG.warn(

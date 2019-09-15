@@ -414,19 +414,19 @@ public class ZoolServiceMesh {
   /**
    * Schedules a single health check on a host address
    *
-   * @param hostAddress a HostAddress object to health check
+   * @param remoteHostAddress a RemoteHostAddress object to health check
    */
-  private void scheduleHostHealthCheck(final HostAddress hostAddress) {
-    LOG.info("Scheduling an ad-hoc health check for host node: " + hostAddress.getHostZkNode());
+  private void scheduleHostHealthCheck(final RemoteHostAddress remoteHostAddress) {
+    LOG.info("Scheduling an ad-hoc health check for host node: " + remoteHostAddress.getHostZkNode());
 
     final Map<String, Runnable> adHocHealthCheckSchedule = scheduledMissingHostChecks.computeIfAbsent(
-        hostAddress.getServiceKey(), sk -> new ConcurrentHashMap<>());
+        remoteHostAddress.getServiceKey(), sk -> new ConcurrentHashMap<>());
 
-    adHocHealthCheckSchedule.computeIfAbsent(hostAddress.getHostUrl(), hostUrl -> {
+    adHocHealthCheckSchedule.computeIfAbsent(remoteHostAddress.getHostUrl(), hostUrl -> {
       Runnable healthCheckNow = () -> {
-        LOG.info("Starting ad-hoc health check for host: " + hostAddress.getHostZkNode());
+        LOG.info("Starting ad-hoc health check for host: " + remoteHostAddress.getHostZkNode());
 
-        Map<String, ZoolAnnouncement> serviceHostMap = meshNetwork.get(hostAddress.getServiceKey());
+        Map<String, ZoolAnnouncement> serviceHostMap = meshNetwork.get(remoteHostAddress.getServiceKey());
         // get the announcement for this host
         Optional<String> maybeAnnouncementId = serviceHostMap.keySet()
             .stream()
@@ -438,15 +438,15 @@ public class ZoolServiceMesh {
         }
 
         maybeAnnouncementId.ifPresent(
-            announcementId -> healthCheckServiceHost(hostAddress.getServiceKey(), announcementId,
+            announcementId -> healthCheckServiceHost(remoteHostAddress.getServiceKey(), announcementId,
                 serviceHostMap.get(announcementId)).thenAccept((b) -> {
               // get rid of ourselves in the map, allowing others to schedule missing checks in the event that its not
               // really missing.. guard here from any cross thread additions
               synchronized (scheduledMissingHostChecks) {
                 adHocHealthCheckSchedule.remove(hostUrl);
                 if (adHocHealthCheckSchedule.isEmpty()) {
-                  LOG.info("No more missing reports for service: " + hostAddress.getServiceKey());
-                  scheduledMissingHostChecks.remove(hostAddress.getServiceKey());
+                  LOG.info("No more missing reports for service: " + remoteHostAddress.getServiceKey());
+                  scheduledMissingHostChecks.remove(remoteHostAddress.getServiceKey());
                 }
               }
             }));
@@ -469,8 +469,8 @@ public class ZoolServiceMesh {
    * @return true if host is reported missing
    */
   public CompletableFuture<Boolean> reportMissing(String serviceName, String remoteHostUrl) {
-    HostAddress hostAddress = new HostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
-    LOG.info("Zool Service Mesh received missing host report for hostAddress" + hostAddress);
+    RemoteHostAddress remoteHostAddress = new RemoteHostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
+    LOG.info("Zool Service Mesh received missing host report for remoteHostAddress" + remoteHostAddress);
 
     if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(
         getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure(), zoolConfig))) {
@@ -506,7 +506,7 @@ public class ZoolServiceMesh {
       matchedHost.ifPresent(host -> {
         set.put(remoteHostUrl, host);
         // schedule a health check. We'll remove it from the mesh and update the discovery services if it fails.
-        scheduleHostHealthCheck(hostAddress);
+        scheduleHostHealthCheck(remoteHostAddress);
 
       });
       // return true even if its a repeat report.
@@ -529,14 +529,14 @@ public class ZoolServiceMesh {
   /**
    * Remove a host address from our service mesh
    *
-   * @param hostAddress the {@link HostAddress}
+   * @param remoteHostAddress the {@link RemoteHostAddress}
    */
-  private void removeHostAddress(HostAddress hostAddress) {
-    infoIf(LOG, () -> "Remove Host Address: " + hostAddress);
+  private void removeHostAddress(RemoteHostAddress remoteHostAddress) {
+    infoIf(LOG, () -> "Remove Host Address: " + remoteHostAddress);
     // suppress the host node!
-    if (!zoolWriter.removeNode(hostAddress.getHostZkNode())) {
+    if (!zoolWriter.removeNode(remoteHostAddress.getHostZkNode())) {
       // already removed
-      LOG.warn("Not not removed: " + hostAddress.getHostUrl());
+      LOG.warn("Not not removed: " + remoteHostAddress.getHostUrl());
     }
 
     // run a network health check now
@@ -556,7 +556,7 @@ public class ZoolServiceMesh {
       String remoteHostUrl,
       ZoolAnnouncement remoteHostData) {
 
-    HostAddress hostAddress = new HostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
+    RemoteHostAddress remoteHostAddress = new RemoteHostAddress(zoolWriter.getZool().getServiceMapNode(), serviceName, remoteHostUrl);
     final String localHostUrlAndPort = getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure(), zoolConfig);
 
     if (zoolServiceKey.equals(serviceName) && remoteHostUrl.equals(localHostUrlAndPort)) {
@@ -568,8 +568,8 @@ public class ZoolServiceMesh {
     debugIf(LOG, () -> "Heath Check Service Host: " + serviceName + "/" + remoteHostUrl);
     StereoHttpRequest.Builder<Object, String> healthCheckBuilderRequestBuilder = new StereoHttpRequest.Builder<>(
         Object.class, String.class).setSecure(remoteHostData.securehost)
-        .setHost(hostAddress.getHost())
-        .setPort(hostAddress.getPort());
+        .setHost(remoteHostAddress.getHost())
+        .setPort(remoteHostAddress.getPort());
 
     if (serviceName.equals(zoolServiceKey)) {
       debugIf(LOG, () -> "Sending GET health check to a known discovery service instance at: " + remoteHostUrl);
@@ -594,12 +594,12 @@ public class ZoolServiceMesh {
           boolean exists = true;
           if (dynamicDiscoveryFeedback.getStatus() != HttpStatus.SC_OK) {
             infoIf(LOG,
-                () -> "Host " + hostAddress + " doesn't respond from healthcheck after " + serviceHealthCheckTimeout + " ms");
-            removeHostAddress(hostAddress);
+                () -> "Host " + remoteHostAddress + " doesn't respond from healthcheck after " + serviceHealthCheckTimeout + " ms");
+            removeHostAddress(remoteHostAddress);
             exists = false;
           } else {
-            if (!zoolReader.nodeExists(hostAddress.getHostZkNode())) {
-              LOG.warn("Host Node is not in zool!" + hostAddress.getHostZkNode());
+            if (!zoolReader.nodeExists(remoteHostAddress.getHostZkNode())) {
+              LOG.warn("Host Node is not in zool!" + remoteHostAddress.getHostZkNode());
             }
           }
 

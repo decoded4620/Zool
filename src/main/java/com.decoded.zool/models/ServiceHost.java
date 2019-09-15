@@ -5,10 +5,12 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-
+/**
+ * Represents an announced host in zool
+ */
 public class ServiceHost {
-  private String hostUrl = "127.0.0.1";
-  private int port = 9000;
+  private String hostUrl = "";
+  private int port = -1;
   private String token = "";
   private boolean isSecure = false;
 
@@ -58,9 +60,10 @@ public class ServiceHost {
     return token;
   }
 
+
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getFullUrl() {
-    return hostUrl + (port > -1 ? ":" + port : "");
+    return port > -1 ? String.format("%s:%d",hostUrl, port) : hostUrl;
   }
 
   @Override

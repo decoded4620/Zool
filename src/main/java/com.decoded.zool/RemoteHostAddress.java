@@ -9,7 +9,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  * This object parses a remote host url, a service map node, and a service key into an organized set of data about the
  * host itself. Allowing quick access to things like hostUrl and port, or full url, or the service key of the host.
  */
-public class HostAddress {
+public class RemoteHostAddress {
   private final String host;
   private final int port;
   private final String serviceKey;
@@ -24,13 +24,13 @@ public class HostAddress {
    * @param serviceKey     the service key
    * @param remoteHostUrl  the remote host url.
    */
-  public HostAddress(String serviceMapNode, String serviceKey, String remoteHostUrl) {
+  public RemoteHostAddress(String serviceMapNode, String serviceKey, String remoteHostUrl) {
     this.hostUrl = remoteHostUrl;
     this.serviceMapNode = serviceMapNode;
     this.serviceKey = serviceKey;
     this.hostZkNode = ZConst.PathSeparator.ZK.join(this.serviceMapNode, this.serviceKey, remoteHostUrl);
 
-    final int portIdx = remoteHostUrl.indexOf(":");
+    final int portIdx = remoteHostUrl.lastIndexOf(':');
     this.host = portIdx > -1 ? remoteHostUrl.substring(0, portIdx) : remoteHostUrl;
     this.port = portIdx > -1 ? Integer.valueOf(remoteHostUrl.substring(portIdx + 1)) : portIdx;
   }
@@ -99,7 +99,7 @@ public class HostAddress {
       return false;
     }
 
-    final HostAddress that = (HostAddress) o;
+    final RemoteHostAddress that = (RemoteHostAddress) o;
 
     return new EqualsBuilder().append(port, that.port)
         .append(host, that.host)
