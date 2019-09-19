@@ -37,12 +37,17 @@ public class ZoolServiceMesh {
   private static final Logger LOG = LoggerFactory.getLogger(ZoolServiceMesh.class);
   // 5 minutes in milliseconds
 
-  private static final long MIN_TIME = 15000L;
+  private static final long MIN_REQUEST_BASED_INTERVAL_TIME = 2000L;
+  private static final long MAX_HEALTHCHECK_INTERVAL_TIME = 10000L;
+  private static final long MAX_REQUEST_BASED_INTERVAL_TIME = 30000L;
 
   // these intervals start aggressive (small times) and get larger as they "ramp" up. each loop of the intervals
   // will grow these intervals until they "mature" to their max value.
-  private static final ElasticInterval internalCleanInterval = ElasticInterval.elasticRamp(.15, MIN_TIME, 30000);
-  private static final ElasticInterval serviceCleanScheduleInterval = ElasticInterval.elasticRamp(.10, MIN_TIME, 3000);
+  private static final ElasticInterval healthCheckElasticInterval = ElasticInterval.elasticRamp(.05,
+      MIN_REQUEST_BASED_INTERVAL_TIME, MAX_HEALTHCHECK_INTERVAL_TIME);
+
+  private static final ElasticInterval serviceCleanScheduleInterval = ElasticInterval.elasticRamp(.10,
+      MIN_REQUEST_BASED_INTERVAL_TIME, MAX_REQUEST_BASED_INTERVAL_TIME);
   private final StereoHttpClient stereoHttpClient;
   private final ExecutorService executorService;
   private final ScheduledExecutorService scheduledExecutorService;
@@ -401,13 +406,13 @@ public class ZoolServiceMesh {
    * Schedules a network health check for all known hosts.
    */
   private void scheduleNetworkHealthCheck() {
-    infoIf(LOG, () -> "Scheduling Network health check in: " + internalCleanInterval + " ms");
+    infoIf(LOG, () -> "Scheduling Network health check in: " + healthCheckElasticInterval + " ms");
     if (!healthCheckRunning && !healthCheckScheduled) {
       healthCheckScheduled = true;
       scheduledExecutorService.schedule(() -> {
         healthCheckScheduled = false;
         this.networkHealthCheck().thenRun(() -> executorService.submit(this::scheduleNetworkHealthCheck));
-      }, internalCleanInterval.getAndUpdate(), TimeUnit.MILLISECONDS);
+      }, healthCheckElasticInterval.getAndUpdate(), TimeUnit.MILLISECONDS);
     }
   }
 
