@@ -37,8 +37,8 @@ public class ZoolServiceMesh {
   private static final Logger LOG = LoggerFactory.getLogger(ZoolServiceMesh.class);
   // 5 minutes in milliseconds
 
-  private static final long MIN_REQUEST_BASED_INTERVAL_TIME = 2000L;
-  private static final long MAX_HEALTHCHECK_INTERVAL_TIME = 10000L;
+  private static final long MIN_REQUEST_BASED_INTERVAL_TIME = 7000L;
+  private static final long MAX_HEALTHCHECK_INTERVAL_TIME = 12000L;
   private static final long MAX_REQUEST_BASED_INTERVAL_TIME = 30000L;
 
   // these intervals start aggressive (small times) and get larger as they "ramp" up. each loop of the intervals
@@ -54,7 +54,7 @@ public class ZoolServiceMesh {
   private final Map<String, Map<String, ZoolAnnouncement>> meshNetwork = new ConcurrentHashMap<>();
   private final Map<String, Map<String, ZoolAnnouncement>> missingReports = new ConcurrentHashMap<>();
   private final Map<String, Map<String, Runnable>> scheduledMissingHostChecks = new ConcurrentHashMap<>();
-  private int serviceHealthCheckTimeout = 500;
+  private int serviceHealthCheckTimeout = 2000;
   private boolean healthCheckRunning = false;
   private boolean healthCheckScheduled = false;
   private boolean isAnnounced = false;
