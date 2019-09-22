@@ -3,7 +3,6 @@ package com.decoded.zool;
 import com.decoded.javautil.Pair;
 import com.decoded.zool.connection.ZookeeperConnection;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -320,7 +319,7 @@ public abstract class ZoolServiceMeshClient {
           final String servicePath = ZConst.PathSeparator.ZK.join(gatewayPath, host);
           LOG.info("Reading child data from: " + servicePath);
           zoolReader.readChannel(servicePath, (channelKey, data) -> {
-            LOG.info("Got data for channel key: " + channelKey + " data: " + data.length);
+            LOG.info("Data for Zool Channel: " + channelKey + " data: " + data.length);
             ZoolAnnouncement announcement = ZoolAnnouncement.deserialize(data);
             newGatewayHosts.put(host, announcement);
             latch.countDown();
@@ -332,19 +331,19 @@ public abstract class ZoolServiceMeshClient {
 
         boolean awaitSuccess;
         try {
-          awaitSuccess = latch.await(zookeeperConnection.getZkConnectTimeout() * hosts.size(), TimeUnit.MILLISECONDS);
+          if (!latch.await(zookeeperConnection.getZkConnectTimeout() * hosts.size(), TimeUnit.MILLISECONDS)) {
+            LOG.warn(
+                "Timeout while waiting... loaded " + newGatewayHosts.size() + " of " + hosts.size() + " hosts");
+          } else {
+            LOG.info ("Loaded all hosts: " + newGatewayHosts.size());
+          }
         } catch (InterruptedException ex) {
-          awaitSuccess = false;
           LOG.warn(
-              "Interrupted while waiting... only loaded " + newGatewayHosts.size() + " hosts of " + hosts.size() + " " +
-                  "hosts");
-        }
-
-        if (!awaitSuccess) {
-          LOG.warn("Didn't load all hosts!");
+              "Interrupted while waiting... only loaded " + newGatewayHosts.size() + " of " + hosts.size() + " hosts");
         }
 
         gatewayHosts = ImmutableMap.copyOf(newGatewayHosts);
+
         // wait for at least one host.
         if (!gatewayHosts.isEmpty()) {
           LOG.info("Gateway Hosts received for " + p + " , " + hosts.size());
