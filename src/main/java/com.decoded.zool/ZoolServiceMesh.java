@@ -54,7 +54,7 @@ public class ZoolServiceMesh {
   private final Map<String, Map<String, ZoolAnnouncement>> meshNetwork = new ConcurrentHashMap<>();
   private final Map<String, Map<String, ZoolAnnouncement>> missingReports = new ConcurrentHashMap<>();
   private final Map<String, Map<String, Runnable>> scheduledMissingHostChecks = new ConcurrentHashMap<>();
-  private int serviceHealthCheckTimeout = 2000;
+  private int serviceHealthCheckTimeout = 5000;
   private boolean healthCheckRunning = false;
   private boolean healthCheckScheduled = false;
   private boolean isAnnounced = false;
@@ -570,11 +570,12 @@ public class ZoolServiceMesh {
       return CompletableFuture.completedFuture(true);
     }
 
-    debugIf(LOG, () -> "Heath Check Service Host: " + serviceName + "/" + remoteHostUrl);
+    infoIf(LOG, () -> "Heath Check Service Host: " + serviceName + "/" + remoteHostUrl);
     StereoHttpRequest.Builder<Object, String> healthCheckBuilderRequestBuilder = new StereoHttpRequest.Builder<>(
         Object.class, String.class).setSecure(remoteHostData.securehost)
         .setHost(remoteHostAddress.getHost())
-        .setPort(remoteHostAddress.getPort());
+        .setPort(remoteHostAddress.getPort())
+        .addHeader("Accept", "application/json");
 
     if (serviceName.equals(zoolServiceKey)) {
       debugIf(LOG, () -> "Sending GET health check to a known discovery service instance at: " + remoteHostUrl);
@@ -585,7 +586,8 @@ public class ZoolServiceMesh {
       // we are checking a host instance, we'll pass our current knowledge of the system to the host since we get
       // ordered changes signaled from zookeeper already, we should have the latest data available since last signal
       // received.
-      healthCheckBuilderRequestBuilder.addHeader("Content-Type", "application/json")
+      healthCheckBuilderRequestBuilder
+          .addHeader("Content-Type", "application/json")
           .setRequestMethod(RequestMethod.POST)
           .setBody(serializedMeshNetwork());
     }
@@ -595,11 +597,10 @@ public class ZoolServiceMesh {
 
     return new StereoHttpTask<>(stereoHttpClient, serviceHealthCheckTimeout).execute(Object.class, stereoHttpRequest)
         .thenApplyAsync(dynamicDiscoveryFeedback -> {
-          debugIf(LOG, () -> "Discovery Health Check Response: " + dynamicDiscoveryFeedback.getStatus());
+          infoIf(LOG, () -> "Discovery Health Check Response: " + dynamicDiscoveryFeedback.getStatus());
           boolean exists = true;
           if (dynamicDiscoveryFeedback.getStatus() != HttpStatus.SC_OK) {
-            infoIf(LOG,
-                () -> "Host " + remoteHostAddress + " doesn't respond from healthcheck after " + serviceHealthCheckTimeout + " ms");
+            LOG.warn("Host " + remoteHostAddress + " doesn't respond from healthcheck after " + serviceHealthCheckTimeout + " ms");
             removeHostAddress(remoteHostAddress);
             exists = false;
           } else {
