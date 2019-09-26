@@ -6,10 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -131,14 +128,27 @@ public abstract class ZoolServiceMeshClient {
     if (!isMyHostDiscoverable()) {
       // announce again
       LOG.warn("Re-Announcing ourselves to zool!");
-      return announcer.apply(isProd());
+      return announcer.apply(isProd()).thenApply(x -> {
+        Map<String, ZoolAnnouncement> cluster = zoolServiceMesh.get(getZoolServiceKey());
+
+        if(cluster != null) {
+          ZoolAnnouncement announcement = new ZoolAnnouncement();
+          announcement.currentEpochTime = System.currentTimeMillis();
+          announcement.securehost = ZoolSystemUtil.isSecure();
+
+          announcement.token = new byte[0];
+
+          cluster.put(ZoolSystemUtil.getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure(), zoolConfig), announcement);
+        }
+        return x;
+      });
     }
 
     return CompletableFuture.completedFuture(null);
   }
 
   /**
-   * Update the service mesh without option to reannounce
+   * Update the service mesh without option to re announce
    *
    * @param freshMesh the new mesh
    */
