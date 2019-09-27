@@ -54,7 +54,7 @@ public class ZoolServiceMesh {
   private final Map<String, Map<String, ZoolAnnouncement>> meshNetwork = new ConcurrentHashMap<>();
   private final Map<String, Map<String, ZoolAnnouncement>> missingReports = new ConcurrentHashMap<>();
   private final Map<String, Map<String, Runnable>> scheduledMissingHostChecks = new ConcurrentHashMap<>();
-  private int serviceHealthCheckTimeout = 5000;
+  private int serviceHealthCheckTimeout = 2000;
   private boolean healthCheckRunning = false;
   private boolean healthCheckScheduled = false;
   private boolean isAnnounced = false;
@@ -587,7 +587,7 @@ public class ZoolServiceMesh {
       // ordered changes signaled from zookeeper already, we should have the latest data available since last signal
       // received.
       healthCheckBuilderRequestBuilder
-          .addHeader("Content-Type", "application/json")
+          .addHeader("Content-Type", "application/json; charset=utf-8")
           .setRequestMethod(RequestMethod.POST)
           .setBody(serializedMeshNetwork());
     }
@@ -597,19 +597,27 @@ public class ZoolServiceMesh {
 
     return new StereoHttpTask<>(stereoHttpClient, serviceHealthCheckTimeout).execute(Object.class, stereoHttpRequest)
         .thenApplyAsync(dynamicDiscoveryFeedback -> {
-          infoIf(LOG, () -> "Discovery Health Check Response: " + dynamicDiscoveryFeedback.getStatus());
           boolean exists = true;
+
+          if(dynamicDiscoveryFeedback == null) {
+            LOG.error("Could not get response from request: " + stereoHttpRequest.getRequestMethod() + " " + stereoHttpRequest.getFullUrl());
+            return false;
+          }
           if (dynamicDiscoveryFeedback.getStatus() != HttpStatus.SC_OK) {
-            LOG.warn("Host " + remoteHostAddress + " doesn't respond from healthcheck after " + serviceHealthCheckTimeout + " ms");
+            LOG.warn("Host " + remoteHostAddress + " failed host health check with status: " + dynamicDiscoveryFeedback.getStatus());
             removeHostAddress(remoteHostAddress);
             exists = false;
           } else {
+            LOG.warn("Non 2xx Response -> Discovery Host " + stereoHttpRequest.getFullUrl() + " Health Check Response: " + dynamicDiscoveryFeedback.getStatus());
             if (!zoolReader.nodeExists(remoteHostAddress.getHostZkNode())) {
-              LOG.warn("Host Node is not in zool!" + remoteHostAddress.getHostZkNode());
+              LOG.warn("Host Node " + stereoHttpRequest.getFullUrl() + " is not in zool for service: " + remoteHostAddress.getHostZkNode());
             }
           }
 
           return exists;
+        }).exceptionally(ex -> {
+          LOG.error("An exception occurred during health check", ex);
+          return null;
         });
   }
 
@@ -669,7 +677,7 @@ public class ZoolServiceMesh {
                 () -> infoIf(LOG, () -> "Completed health check for service " + serviceName + "!"));
           }, intervalNow, TimeUnit.MILLISECONDS);
         } else {
-          infoIf(LOG, () -> "No hosts on " + serviceName + " skipping....");
+          debugIf(LOG, () -> "No hosts on " + serviceName + " skipping....");
           cleanerLatch.countDown();
         }
       } else {
