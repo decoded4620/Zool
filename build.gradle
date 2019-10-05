@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'idea'
+    id 'maven'
     id 'maven-publish'
 }
 apply from:'./gradle/javadoc.gradle'
@@ -15,6 +16,28 @@ def globalConf = rootProject.ext
 repositories {
     mavenCentral()
     mavenLocal()
+    maven {
+        name = "stereoHttp"
+        url = "https://raw.githubusercontent.com/decoded4620/StereoHttp/master/releases"
+        credentials(HttpHeaderCredentials.class) {
+            name = "Authorization"
+            value = "Bearer 31e11a2c01035f73c860330d419341307f83c9a1"
+        }
+        authentication {
+            register("header", HttpHeaderAuthentication.class)
+        }
+    }
+    maven {
+        name = "zool"
+        url = "https://raw.githubusercontent.com/decoded4620/JavaUtils/master/releases"
+        credentials(HttpHeaderCredentials.class) {
+            name = "Authorization"
+            value = "Bearer 31e11a2c01035f73c860330d419341307f83c9a1"
+        }
+        authentication {
+            register("header", HttpHeaderAuthentication.class)
+        }
+    }
     maven {
         name "lightbend-maven-release"
         url "https://repo.lightbend.com/lightbend/maven-releases"

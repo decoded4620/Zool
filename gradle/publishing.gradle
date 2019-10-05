@@ -9,6 +9,23 @@ task javadocJar(type: Jar) {
     archiveClassifier.set("javadoc")
 }
 
+task writeNewPom {
+    doLast {
+        pom {
+            project {
+                inceptionYear '2019'
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+            }
+        }.writeTo("$buildDir/pom.xml")
+    }
+}
+
 // maven plugin
 publishing {
     // TODO @barcher setup artifactory
