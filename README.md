@@ -15,29 +15,39 @@ Read them [Here](https://decoded4620.github.io/Zool/docs/javadoc/)
 
 This example is using a Hocon Style Application Configuration but Zool is completely unopinionated on your configuration setup. This can be approached by any means.
 
+example `application.conf` contents for localhost development
 ```
-hocon {
-  # Stereo Http Configuration
-  httpClient {
-    maxOutboundConnections=5
-    maxOutboundConnectionsPerRoute=5
-  }
+servers {
+  localhost="127.0.0.1"
+  zkPort=2181
+  zookeeper = ${servers.localhost}
+}
 
-  # Zookeeper Configuration
-  zookeeper {
-    client {
-      zkConnectTimeout=10000
-      zkHost="127.0.0.1"
-      zkPort=2181
-      zkServiceMapNode="/services"
-    }
+# Zookeeper Configuration
+discovery {
+# Zookeeper Configuration
+zookeeper {
+  configuration {
+      ######################################################
+      # NGROK flag allows us to bypass the port value when
+      # Announcing to Zool since ngrok hides the port value
+      # (By default its  80)
+      ######################################################
+      usengrok=true
+      discoveryHealthCheckEndpoint="/discoveryHealthCheck"
+  }
+  connection {
+    zkConnectTimeout=10000
+    zkHost=${servers.zookeeper}
+    zkPort=${servers.zkPort}
+    zkServiceMapNode="/services"
   }
 }
 ```
 
 
 #### Create a custom Stereo Http Client
-Stereo Http is how Zool communicates with external services. It is an Apache NIO based http client.
+`StereoHttp` the mechanism used by Zool to communicate with external services over `http`/`https`. It is an Apache NIO based http client.
 The main demonstration shown is setting up the maxOutboundConnections and maxOutboundConnectionsPerRoute properties of the [Stereo Http Client](http://github.com/decoded4620/StereoHttp). The client doesn't have to be extended, but this is a convenient way to inject your own configuration, in this exmaple, Hocon Style Configuration from Play
 ```java
 /**
@@ -51,9 +61,7 @@ public class MyOwnStereoHttpClient extends StereoHttpClient {
   public MyOwnStereoHttpClient(ExecutorService executorService) {
     super(executorService);
     
-
     // TODO create your Cfg instance here using your own means (e.g. play Hocon Configuration, or other)
-
     setMaxOutboundConnectionsPerRoute(cfg.maxOutboundConnectionsPerRoute);
     setMaxOutboundConnections(cfg.maxOutboundConnections);
   }
@@ -88,12 +96,13 @@ public class DynamicDiscoveryServiceModule extends AbstractModule {
     // setup executor services
     bind(ExecutorService.class).toInstance(Executors.newFixedThreadPool(10));
     // -----------------
-    // Zookeeper
+    // Zool Bindings
+    bind(ZoolConfig.class).to(MilliZoolConfiguration.class).asEagerSingleton();
+    bind(ZookeeperConnection.class).to(MilliZookeeperConnection.class).asEagerSingleton();
     bind(ZoolDataFlow.class).to(ZoolDataFlowImpl.class).asEagerSingleton();
     bind(Zool.class).to(Zilli.class).asEagerSingleton();
+    bind(ZilliClient.class).asEagerSingleton();
     bind(ZoolServiceMeshClient.class).to(ZilliClient.class).asEagerSingleton();
-    // -----------------
-    // ZoolServiceHub
     bind(ZoolServiceMesh.class).asEagerSingleton();
   }
 }
@@ -105,74 +114,92 @@ Given a similar setup to the above, your Play Module now becomes a Zool Enabled 
 In Play Framework Style apps, we can implement application containers which are startup and shutdown aware. This means that when Play Framework starts or stops, they provide hooks in order to handle the events.
 
 ```java
-package com.my.app.container;
+package com.milli.container;
 
 import com.decoded.polldancer.PollDancer;
 import com.decoded.stereohttp.StereoHttpClient;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.milli.container.configuration.ContainerConfiguration;
+import com.milli.core.configuration.ConfigScope;
 import play.Logger;
+import play.api.Application;
 import play.api.Play;
 import play.inject.ApplicationLifecycle;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-
-/**
- * This class represents the main web container, and its connection to the orchestrated system that is milli
- * microservices.
- * This system includes zookeeper, and several service pools, each host an instance of the Milli Application Container.
- * <p>
- * The container can announce to zookeeper, and detect available zookeeper services on the same Quorum.
- * <p>
- * The container provides access to an Http Client ({@link StereoHttpClient}) which can be used to make requests to
- * webservices,
- * milli micro services, or any http accessible Url.
- */
 @SuppressWarnings("WeakerAccess")
 public class ApplicationContainer {
-
-  private static final Logger.ALogger LOG = Logger.of(ApplicationContainer.class);
-
+  private static final ConfigScope CFG_SCOPE = ContainerScopes.CONTAINER.child("applicationContainer");
+  
   private final Cfg cfg;
   private final ExecutorService executorService;
-
+  private final ContainerConfiguration containerConfiguration;
+  private final ModuleConfiguration moduleConfiguration;
   private final ApplicationLifecycle lifecycle;
-  private final StereoHttpClient stereoHttpClient;
-  private final ZoolServiceMesh zoolServiceMesh;
-
+  private StereoHttpClient stereoHttpClient;
+  private Provider<Application> applicationProvider;
+  
   @Inject
-  public ApplicationContainer(ExecutorService executorService,
+  public ApplicationContainer(Provider<Application> applicationProvider, ContainerConfiguration containerConfiguration,
+                              ModuleConfiguration moduleConfiguration,
+                              ExecutorService executorService,
                               StereoHttpClient httpClient,
-                              ApplicationLifecycle lifecycle,
-                              ZoolServiceMesh zoolService
-  ) {    
-    // TODO setup Cfg instance using Hocon or other means.. 
-
+                              ApplicationLifecycle lifecycle
+  ) {
+    this.containerConfiguration = containerConfiguration;
+    this.cfg = this.containerConfiguration.maybeScopedConfiguration(CFG_SCOPE, Cfg.class).orElseGet(Cfg::new);
+    this.applicationProvider = applicationProvider;
     this.lifecycle = lifecycle;
+    this.moduleConfiguration = moduleConfiguration;
     this.executorService = executorService;
     this.stereoHttpClient = httpClient;
-    this.zoolService = zoolService;
 
-    startHttpClient();
-  }
-
+    waitForAppStart();
+  } 
+  
   public Cfg getCfg() {
     return cfg;
+  } 
+  
+  public ContainerConfiguration getContainerConfiguration() {
+    return containerConfiguration;
+  }
+ 
+  public ModuleConfiguration getModuleConfiguration() {
+    return moduleConfiguration;
   }
 
-  protected void startHttpClient() {
+  private void waitForAppStart() {
+    lifecycle.addStopHook(this::onAppShutdown);
+    // play poll dancer is triggered when Play Current is available.
+    new PollDancer(executorService, this::onAppStartup).setPollTrigger(() -> {
+      try {
+        Play.current();
+        return true;
+      } catch (Throwable ex) {
+        return false;
+      }
+    }).start();
+  }
+
+  protected void onAppStartup() {
     if (stereoHttpClient.canStart()) {
-      stereoHttpClient.start();
+        stereoHttpClient.start();
     }
+  }
+  protected <T> CompletableFuture<T> onAppShutdown() {
+    executorService.shutdownNow();
+    return CompletableFuture.completedFuture(null);
   }
 
   public static class Cfg {
-    public String zookeeperServiceKey = "zkSvc";
-    public String zookeeperGatewayKey = "zkGateway";
     public boolean isProd = false;
   }
 }
+
 
 ```
 ## Zool Service Mesh
@@ -197,7 +224,7 @@ zoolServiceMesh.setServiceKey("userService");
 // if production true, false for dev
 zoolServiceMesh.setProd(true);
 // this will start the hub, and announce our local url, as well as exchange for a copy of the other
-// services on the network.
+// services on the network, if there are any. This requires Zookeeper to be running at the configured ip / port
 zoolServiceMesh.start();
 ```
 
@@ -217,31 +244,57 @@ To get known services based on the gateway service map and service keys:
 ```
 ### Service and Gateway Nodes
 The ZoolServiceMesh will automatically create the gateway and service map nodes based on the
-configuration. You can create several service maps and gateways in a zookeeper network to control
-the sharing of information for example.
+configuration.  Example:
 ```
-serviceMap0
- |- loginService
- |--- localhost:9443
-serviceMap1
- |- userService
- |--- localhost:9001
- |--- localhost:9003
- |- activityService
- |--- localhost:9002
-serviceMap2
- |- adminService
- |--- localhost:9004
- |- financeService
- |--- localhost:9005
- |--- localhost:9006
+serviceMap: {
+  authorization: {
+    ec2-3-15-204-21.us-east-2.compute.amazonaws.com:9000: {
+      token: "...",
+      currentEpochTime: 1570115378945,
+      securehost: false
+    }
+  },
+  identity: {
+    ec2-3-15-13-254.us-east-2.compute.amazonaws.com:9000: {
+      token: "...",
+      currentEpochTime: 1570115339645,
+      securehost: false
+    }
+  },
+  flagship: {
+    ec2-18-188-238-37.us-east-2.compute.amazonaws.com:9000: {
+     token: "...",
+     currentEpochTime: 1570313803558,
+     securehost: false
+    },
+    ec2-18-191-91-113.us-east-2.compute.amazonaws.com:9000: {
+      token: "...",
+      currentEpochTime: 1570313786184,
+      securehost: false
+    }
+  },
+  dynamicdiscovery: {
+    ec2-3-19-237-167.us-east-2.compute.amazonaws.com:9000: {
+      token: "...",
+      currentEpochTime: 1570115200558,
+      securehost: false
+    }
+  },
+  example: {
+    ec2-3-15-200-96.us-east-2.compute.amazonaws.com:9000: {
+      token: "...",
+      currentEpochTime: 1570115339653,
+      securehost: false
+    }
+  }
+}
+
 ```
 To overlap, you might want to share the login service above between the userService and the adminService in some way.
 
-
 Both user service and admin service provide an additional ZoolServiceHub instance, pointing to "serviceMap0" as its gateway.
 
-NOTE: This particular system is still under consideration!
+`NOTE:` This particular system is still under consideration!
 
 ### Creating your service and gateway nodes manually
 This assumes you have Zookeeper installed on your Linux, Mac, or Windows system.
