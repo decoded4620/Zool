@@ -235,7 +235,6 @@ public class ZoolDataFlowImpl implements ZoolDataFlow {
 
     handlersAtPath.remove(dataSink);
     if (handlersAtPath.isEmpty()) {
-      LOG.info("Last handler for " + dataSink.getZNode() + " was removed!");
       if (!unwatch(dataSink.getZNode())) {
         LOG.error("Could not unwatch data from datasink: " + dataSink.getZNode());
       }

@@ -110,13 +110,13 @@ public class ZoolDataSinkImpl implements ZoolDataSink {
 
   @Override
   public void onNoChildren(final String zNode) {
-    LOG.info("No children found on " + zNode + "(has no children handler: " + (noChildNodesHandler != null) + ")");
+    LOG.debug("No children found on " + zNode + "(has no children handler: " + (noChildNodesHandler != null) + ")");
     Optional.ofNullable(noChildNodesHandler).ifPresent(handler -> handler.accept(zNode));
   }
 
   @Override
   public void onChildren(final String zNode, final List<String> childNodes) {
-    LOG.info(
+    LOG.debug(
         "Children received for " + zNode + " => " + childNodes.size() + "(has children handler: " + (childNodesHandler != null) + ")");
     childNodeNames = ImmutableList.copyOf(childNodes);
     Optional.ofNullable(childNodesHandler).ifPresent(handler -> handler.accept(zNode, childNodeNames));
@@ -124,7 +124,7 @@ public class ZoolDataSinkImpl implements ZoolDataSink {
 
   @Override
   public void onData(String zNode, byte[] data) {
-    LOG.info("Data received for " + zNode + ", " + data.length);
+    LOG.debug("Data received for " + zNode + ", " + data.length);
 
     if (!this.zNode.equals(zNode)) {
       throw new IllegalStateException(
@@ -141,7 +141,7 @@ public class ZoolDataSinkImpl implements ZoolDataSink {
 
   @Override
   public void onLoadComplete(final String zNode) {
-    LOG.info("Load complete for node: " + zNode);
+
   }
 
   public boolean isDisocnnectingAfterFirstLoad() {

@@ -47,7 +47,7 @@ public class ZoolWriter {
    * @param path the string path instance.
    */
   static boolean createEmptyEphemeralNode(Zool zool, final String path) {
-    LOG.info(": createEmptyEphemeralNode: " + path);
+    ZoolLoggingUtil.debugIf(LOG, () -> ": createEmptyEphemeralNode: " + path);
     if (zool.createNode(path, new byte[0], OPEN_ACL_UNSAFE, EPHEMERAL)) {
       debugIf(LOG, () -> ": createEmptyEphemeralNode -> node has been created: " + path);
       return true;

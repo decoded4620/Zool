@@ -75,8 +75,6 @@ public class Zool {
       zoolDataFlow.connect();
 
       connected.set(true);
-    } else {
-      LOG.info("Zool is Already Connected!");
     }
   }
 
@@ -173,7 +171,7 @@ public class Zool {
    * @param dataSink the data sink to plug
    */
   public void drainStop(ZoolDataSink dataSink) {
-    LOG.info("Drain disconnect on sink (node): " + dataSink.getZNode());
+    LOG.debug("Drain disconnect on sink (node): " + dataSink.getZNode());
     zoolDataFlow.drainStop(dataSink);
   }
 
@@ -183,7 +181,7 @@ public class Zool {
    * @param dataSink the data sink to drain into
    */
   public void drain(ZoolDataSink dataSink) {
-    LOG.info("Drain to sink (node): " + dataSink.getZNode());
+    LOG.debug("Drain to sink (node): " + dataSink.getZNode());
     zoolDataFlow.drain(dataSink);
   }
 
@@ -196,7 +194,7 @@ public class Zool {
    * @param ctx         the context (optional)
    */
   public void drain(String path, boolean watch, BiConsumer<String, byte[]> dataHandler, Object ctx) {
-    LOG.info("Drain to handler (on node): " + path + " watch: " + watch);
+    LOG.debug("Drain to handler (on node): " + path + " watch: " + watch);
     zoolDataFlow.drain(path, watch, dataHandler, ctx);
   }
 }

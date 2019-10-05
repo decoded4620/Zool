@@ -177,7 +177,7 @@ public class ZoolSystemUtil {
    */
   public static List<String> getChildNodesAtPath(final ZooKeeper zk, final String path, final boolean watch) {
     if (zk != null) {
-      LOG.info("get child nodes at path: " + path + ", watch " + watch);
+      ZoolLoggingUtil.debugIf(LOG, () -> "get child nodes at path: " + path + ", watch " + watch);
       try {
         Stat stat = zk.exists(path, watch);
         if (stat != null) {
