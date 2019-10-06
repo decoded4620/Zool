@@ -10,13 +10,13 @@ ext {
     zookeeperVersion = "3.5.4-beta"
     appDependencies = [
             guice                : "com.google.inject:guice:4.0",
-            apacheCommons3       : "org.apache.commons:commons-lang3:3.0",
+            apacheCommons3       : "org.apache.commons:commons-lang3:3.8.1",
             zookeeper            : "org.apache.zookeeper:zookeeper:$zookeeperVersion",
             jacksonDataBind      : "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             jacksonDataFormatYAML: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion",
             jacksonDataFormatXML : "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion",
-            stereohttp           : "com.decoded:stereohttp:$stereoVersion",
-            javautils           : "com.decoded:java-utils:$javautilsVersion"
+            stereohttp           : "com.decoded:StereoHttp:$stereoVersion",
+            javautils           : "com.decoded:JavaUtils:$javautilsVersion" // github package
     ]
 
     testDependencies = [
