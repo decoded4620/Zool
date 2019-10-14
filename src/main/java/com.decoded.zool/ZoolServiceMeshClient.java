@@ -6,7 +6,10 @@ import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -176,8 +179,10 @@ public abstract class ZoolServiceMeshClient {
           .anyMatch(key -> key.equals(
               ZoolSystemUtil.getLocalHostUrlAndPort(isProd(), ZoolSystemUtil.isSecure(), zoolConfig)));
 
-      LOG.info(
-          "My service exists at: " + getZoolServiceKey() + ", is my host visible to Discovery Services? " + isDiscoverable);
+      ZoolLoggingUtil.debugIf(LOG,
+          () -> "My service exists at: " + getZoolServiceKey()
+              + ", is my host visible to Discovery Services? "
+              + isDiscoverable);
     }
     return isDiscoverable;
   }
