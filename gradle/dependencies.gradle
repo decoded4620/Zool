@@ -3,7 +3,7 @@
 
 ext {
     javaVersion = "1.8"
-    jacksonVersion = "2.9.7"
+    jacksonVersion = "2.9.10.1"
     mockitoVersion = "2.27.0"
     stereoVersion = "1.0"
     javautilsVersion = "1.0"
@@ -13,8 +13,8 @@ ext {
             apacheCommons3       : "org.apache.commons:commons-lang3:3.8.1",
             zookeeper            : "org.apache.zookeeper:zookeeper:$zookeeperVersion",
             jacksonDataBind      : "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
-            jacksonDataFormatYAML: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion",
-            jacksonDataFormatXML : "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion",
+            jacksonDataFormatYAML: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.7.0",
+            jacksonDataFormatXML : "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.7.0",
             stereohttp           : "com.decoded:StereoHttp:$stereoVersion",
             javautils           : "com.decoded:JavaUtils:$javautilsVersion" // github package
     ]
