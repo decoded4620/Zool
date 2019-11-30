@@ -7,7 +7,7 @@ ext {
     mockitoVersion = "2.27.0"
     stereoVersion = "1.0"
     javautilsVersion = "1.0"
-    zookeeperVersion = "3.5.4-beta"
+    zookeeperVersion = "3.5.5"
     appDependencies = [
             guice                : "com.google.inject:guice:4.0",
             apacheCommons3       : "org.apache.commons:commons-lang3:3.8.1",
